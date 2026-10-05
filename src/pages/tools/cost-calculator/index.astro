@@ -1,0 +1,92 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import FaqBlock from '../../../components/FaqBlock.astro';
+
+const faqs = [
+  { q: '怎么把年付换算成月均价？', a: '用年付总价除以 12，就是月均价；季付除以 3，半年付除以 6。比如年付 ¥99，月均价约 ¥8.25。月均价只用于比较，实际付款仍是一次性付清整个周期的钱，所以还要考虑退款政策和服务商的运营风险。' },
+  { q: '每 GB 成本怎么算，准吗？', a: '用月均价除以每月可用流量（GB）。它只是粗略的比较指标，没有考虑线路质量、设备数限制和流量倍率，而且不同品牌流量周期的写法不统一。看每 GB 成本时，建议同时参考线路类型和资料透明度。' },
+  { q: '这个工具会保存我输入的价格吗？', a: '不会。所有计算都在你的浏览器里完成，输入内容不会发送到服务器，也不会被保存，刷新页面后清空。' },
+];
+---
+
+<BaseLayout
+  title="机场价格换算器｜年付月付折月均价与每GB成本计算｜机场牛"
+  description="机场价格换算器：输入套餐价格、付费周期和每月流量，自动换算月均价、每 GB 成本和计划使用期的总花费，最多三个套餐并排对比，帮你判断便宜机场和性价比机场，纯浏览器本地计算。"
+  keywords={['机场价格计算', '机场价格对比', '性价比机场', '便宜机场', '机场每GB成本']}
+>
+  <Breadcrumbs items={[{ name: '在线工具', href: '/tools/' }, { name: '机场价格换算器', href: '/tools/cost-calculator/' }]} />
+  <span class="section__eyebrow">CALC</span>
+  <h1>机场价格换算器：年付月付一键折算</h1>
+  <p class="lead">把你看中的三个套餐填进去，看月均价、每 GB 成本和计划使用期的总花费。价格和流量请照官网结算页填写，本工具不预设任何品牌数据。</p>
+
+  <div class="card">
+    <form class="tool-form" id="calc" onsubmit="return false">
+      <div id="rows" style="display:grid;gap:1.2rem"></div>
+      <label>
+        计划使用多少个月（用来算总花费）
+        <input type="number" id="months" min="1" max="60" value="12" />
+      </label>
+    </form>
+  </div>
+
+  <h2>换算结果</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>套餐</th><th class="num">月均价（元）</th><th class="num">每 GB 成本（元）</th><th class="num">使用期总花费（元）</th><th>说明</th></tr>
+      </thead>
+      <tbody id="result"></tbody>
+    </table>
+  </div>
+  <p class="muted">总花费 = 月均价 × 计划月数，仅用于对比；实际支付按官网周期一次性结算，续费价可能不同。</p>
+
+  <FaqBlock heading="机场价格换算常见问题" items={faqs} />
+  <p>想直接看资料里的价格对照，去<a href="/rankings/cheap/">便宜机场推荐榜</a>和<a href="/rankings/best-value/">性价比机场推荐榜</a>。</p>
+</BaseLayout>
+
+<script is:inline>
+  (function () {
+    var rows = document.getElementById('rows');
+    var resultEl = document.getElementById('result');
+    var monthsEl = document.getElementById('months');
+    var cycles = [['1', '月付'], ['3', '季付'], ['6', '半年付'], ['12', '年付']];
+    var defaults = [
+      { name: '套餐 A', price: 6.6 * 12, cycle: '12', gb: 40 },
+      { name: '套餐 B', price: 19, cycle: '1', gb: 100 },
+      { name: '套餐 C', price: 99, cycle: '12', gb: 70 },
+    ];
+    defaults.forEach(function (d, i) {
+      var box = document.createElement('div');
+      box.className = 'tool-row';
+      box.innerHTML =
+        '<label>套餐名称<input data-k="name" value="' + d.name + '"></label>' +
+        '<label>价格（元，整个周期的总价）<input data-k="price" type="number" min="0" step="0.1" value="' + d.price.toFixed(1) + '"></label>' +
+        '<label>付费周期<select data-k="cycle">' +
+        cycles.map(function (c) { return '<option value="' + c[0] + '"' + (c[0] === d.cycle ? ' selected' : '') + '>' + c[1] + '</option>'; }).join('') +
+        '</select></label>' +
+        '<label>每月流量（GB）<input data-k="gb" type="number" min="0" step="1" value="' + d.gb + '"></label>';
+      rows.appendChild(box);
+    });
+    function fmt(n) { return isFinite(n) ? n.toFixed(2) : '—'; }
+    function calc() {
+      var months = Math.max(1, Number(monthsEl.value) || 1);
+      var html = '';
+      rows.querySelectorAll('.tool-row').forEach(function (row) {
+        var get = function (k) { return row.querySelector('[data-k="' + k + '"]').value; };
+        var price = Number(get('price')), cyc = Number(get('cycle')), gb = Number(get('gb'));
+        var monthly = cyc > 0 ? price / cyc : NaN;
+        var perGb = gb > 0 ? monthly / gb : NaN;
+        var total = monthly * months;
+        var note = '';
+        if (cyc === 12) note = '年付一次性付清，先确认退款政策';
+        else if (cyc === 1) note = '月付灵活，适合先试用';
+        else note = '周期内一次性付款';
+        html += '<tr><td>' + get('name') + '</td><td class="num">' + fmt(monthly) + '</td><td class="num">' + fmt(perGb) + '</td><td class="num">' + fmt(total) + '</td><td>' + note + '</td></tr>';
+      });
+      resultEl.innerHTML = html;
+    }
+    document.getElementById('calc').addEventListener('input', calc);
+    calc();
+  })();
+</script>

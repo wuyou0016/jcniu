@@ -1,0 +1,485 @@
+---
+// 专项榜单：便宜 / 性价比 / 专线 / 月付 / 稳定。全部从 providers.json 的真实字段筛选与排序，
+// 不引入任何自造分数；没有字段支撑的品牌不会出现在对应专项里。
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import FaqBlock from '../../components/FaqBlock.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+import { getBoard, type BoardRow } from '../../data/utils/board';
+import {
+  cheapestMonthly,
+  cleanLabel,
+  hasDedicatedRoute,
+  hasMonthlyPlan,
+  planFacts,
+  trafficGb,
+} from '../../data/utils/provider-facts';
+
+type Kind = 'cheap' | 'best-value' | 'dedicated-line' | 'monthly' | 'stable';
+
+interface PageConfig {
+  title: string;
+  description: string;
+  h1: string;
+  lead: string;
+  keywords: string[];
+  breadcrumb: string;
+  intro: { heading: string; paragraphs: string[] }[];
+  outro: { heading: string; paragraphs: string[] }[];
+  faqs: { q: string; a: string }[];
+  related: { label: string; href: string }[];
+}
+
+export async function getStaticPaths() {
+  return (['cheap', 'best-value', 'dedicated-line', 'monthly', 'stable'] as Kind[]).map((slug) => ({
+    params: { slug },
+    props: { kind: slug },
+  }));
+}
+
+interface Props {
+  kind: Kind;
+}
+
+const { kind } = Astro.props;
+const board = await getBoard();
+const tierLabel = new Map(board.tiers.map((tier) => [tier.id, tier.label]));
+
+const CONFIGS: Record<Kind, PageConfig> = {
+  cheap: {
+    title: '便宜机场推荐 2026｜月均价最低的机场排行榜｜机场牛',
+    description:
+      '便宜机场推荐：按资料里能读出的月均价从低到高排序，列出每家最便宜一档的价格、流量、计费周期和线路资料，说明便宜背后常见的取舍，帮你找到价格低又资料清楚的机场，下单前以官网为准。',
+    h1: '便宜机场推荐：月均价从低到高排',
+    lead: '便宜机场是最常被搜的需求，但“便宜”要看清楚是按月付还是按年付、流量够不够、续费涨不涨。下面只做一件事：把资料里能读出每月价格的套餐，按月均价从低到高排好，并把计费周期和流量原样摆出来。',
+    keywords: ['便宜机场', '便宜机场推荐', '机场价格', '低价机场', '性价比机场'],
+    breadcrumb: '便宜机场推荐',
+    intro: [
+      {
+        heading: '这个榜怎么排的',
+        paragraphs: [
+          '价格来自品牌官网或第三方资料里记录的套餐文案，凡是文案里写明“每月多少钱”或能直接折算出每月价格的套餐才会入榜；年付套餐按资料里写的折算价列出，例如“年付 ¥99（约 ¥8.3/月）”。读不出每月价格的品牌、没有任何价格资料的品牌不在这个榜里，它们在总榜里。',
+          '榜单只排价格，不代表便宜的就好用。价格低往往意味着流量少、必须年付、或者线路是中转而不是专线，这些取舍都列在表里，你可以对着自己的用量判断。',
+        ],
+      },
+    ],
+    outro: [
+      {
+        heading: '买便宜机场前，先算这三笔账',
+        paragraphs: [
+          '第一笔是总价：年付的月均价很低，但一次要付一整年的钱，万一中途不好用，沉没成本更高。第一次买建议先选月付小套餐试一两个月，再决定要不要年付。',
+          '第二笔是流量：月均价低的套餐流量通常也少。每月要看多少视频、下载多少文件，先估个数，再看套餐够不够，别为了几块钱的差价每月都超流量。',
+          '第三笔是续费：首月优惠和长期价是两回事，续费价能不能保持、优惠码是否只限新用户，都以官网结算页为准。更多买前检查见《<a href="/guides/pianyi-jichang-kaopu-ma/">便宜机场靠谱吗</a>》和《<a href="/tools/cost-calculator/">机场价格换算器</a>》。',
+        ],
+      },
+    ],
+    faqs: [
+      { q: '便宜机场靠谱吗？', a: '价格低本身不是问题，要看资料是否公开、是否能月付试用、有没有跑路信号。便宜机场的常见取舍是流量少、线路是中转、必须年付，这些在表里都能直接对照；资料空白的品牌即使便宜也建议先观望。' },
+      { q: '便宜机场一个月多少钱算合理？', a: '榜单里资料记录的入门套餐，月均价大多在个位数到二十几元之间，差价主要来自流量额度、线路类型和付费周期。判断合理与否，不要只看月均价，同时看流量、线路和能否月付，避免为低价牺牲核心需求。' },
+      { q: '年付比月付便宜，该选年付吗？', a: '第一次购买不建议直接年付。先用月付确认线路、客户端和客服都满足需求，再考虑年付折扣。年付的风险是服务商运营变化时更难退款，所以要先看退款政策，再决定一次付多久。' },
+      { q: '这个榜的价格准确吗？', a: '价格来自官网或第三方资料，注明了来源类型，但商家随时可能调整价格和优惠，榜单快照日期见总榜页。真正下单时请以官网结算页显示的价格为准，本榜只用来缩小选择范围。' },
+    ],
+    related: [
+      { label: '性价比机场推荐', href: '/rankings/best-value/' },
+      { label: '月付机场推荐', href: '/rankings/monthly/' },
+      { label: '机场优惠码', href: '/coupons/' },
+      { label: '机场价格换算器', href: '/tools/cost-calculator/' },
+    ],
+  },
+  'best-value': {
+    title: '性价比机场推荐 2026｜价格、流量与线路一起算的机场排行｜机场牛',
+    description:
+      '性价比机场推荐：不只看谁便宜，而是把月均价、流量额度和线路类型放在一张表里，给出资料里能算出的每元流量参考值，说明怎么判断一个机场性价比高不高，附所有已收录品牌的价格流量对照。',
+    h1: '性价比机场推荐：价格、流量、线路一起看',
+    lead: '性价比不等于最便宜。一个月 ¥8 但只有 40GB 的套餐，和 ¥20 有 120GB 的套餐，哪个更划算取决于你每月用多少。这张表把月均价和流量额度并排放，再给一个粗略的“每元流量”参考值。',
+    keywords: ['性价比机场', '性价比机场推荐', '机场价格对比', '机场流量', '高性价比机场'],
+    breadcrumb: '性价比机场推荐',
+    intro: [
+      {
+        heading: '“每元流量”是什么，怎么用',
+        paragraphs: [
+          '每元流量 = 资料里记录的流量额度（GB）÷ 该套餐的月均价（元）。它假设资料里写的流量是每月额度，而不同品牌的流量周期说明并不统一，所以这个数只能当粗略参考，用来快速看出哪几档“看起来更划算”，不能当成精确的单价。',
+          '真正判断性价比，还要加上线路（专线通常更贵）、设备数限制、续费价格和你自己的用量。数字高但线路资料空白的套餐，未必比数字低但线路明确的更值。',
+        ],
+      },
+    ],
+    outro: [
+      {
+        heading: '怎么判断一个机场性价比高不高',
+        paragraphs: [
+          '先估用量：只刷网页和聊天，一个月几十 GB 就够；经常看高清视频或下载文件，要看 100GB 以上的档位。用量决定你该选哪个流量档，而不是看谁标的数字大。',
+          '再看线路：同样的价格，专线（IPLC/IEPL）和中转的体验可能差很多，资料里写明线路类型的品牌更值得对比。线路资料空白，等于少了一项判断依据。',
+          '最后看付费周期：年付的月均价低，但一次投入大；月付灵活但单价高。性价比还要考虑你能不能承担“选错了”的成本。完整思路见《<a href="/guides/xingjiabi-jichang-zenme-pan/">性价比机场怎么判断</a>》。',
+        ],
+      },
+    ],
+    faqs: [
+      { q: '性价比机场和便宜机场有什么区别？', a: '便宜机场只比价格，性价比机场要把价格、流量、线路和付费周期放在一起比。便宜但流量少、线路资料空白的套餐，性价比未必高；稍贵但流量足、线路明确的套餐，对重度用户可能更划算。' },
+      { q: '每元流量越高越好吗？', a: '不一定。每元流量只反映流量和价格的比例，没有考虑线路质量、设备数限制和续费价格，而且不同品牌流量周期的写法不统一。把它当作粗筛工具，最终还要结合线路资料和自己的用量判断。' },
+      { q: '流量不够用怎么办？', a: '先看是不是被倍率或流媒体拖垮，再考虑升档或加购流量包。多数机场允许月中升级套餐或购买流量包，具体规则以官网为准。长期超用的话，换到流量档位更大的套餐通常比反复加购更划算。' },
+      { q: '榜单里为什么没有速度？', a: '速度和晚高峰表现需要连续多天的固定条件测试才有意义，机场牛目前没有测试记录，不采信来源方自己标注为模拟示例的测速图，所以榜单只比较资料里能核对的价格、流量和线路。' },
+    ],
+    related: [
+      { label: '便宜机场推荐', href: '/rankings/cheap/' },
+      { label: '专线机场推荐', href: '/rankings/dedicated-line/' },
+      { label: '机场对比总表', href: '/compare/' },
+      { label: '机场价格换算器', href: '/tools/cost-calculator/' },
+    ],
+  },
+  'dedicated-line': {
+    title: '专线机场推荐 2026｜IPLC、IEPL 专线机场排行榜｜机场牛',
+    description:
+      '专线机场推荐：列出资料里明确标注 IPLC、IEPL 或企业级内网专线的机场，附线路类型、价格、节点地区和档位，并说明专线和中转线路的区别、专线值不值得多花钱，帮你判断自己要不要为专线买单。',
+    h1: '专线机场推荐：IPLC、IEPL 专线品牌一页看',
+    lead: '“专线机场”是被写滥了的词，不少品牌宣传页上写着专线，但资料里到底有没有明确线路类型，需要一个一个查。这个榜只收录资料里写明了 IPLC、IEPL 或企业级内网专线的品牌，并标注这些线路信息来自官方还是第三方。',
+    keywords: ['专线机场', '专线机场推荐', 'IPLC专线', 'IEPL专线', '机场线路'],
+    breadcrumb: '专线机场推荐',
+    intro: [
+      {
+        heading: '专线、IPLC、IEPL 是什么意思',
+        paragraphs: [
+          '专线指流量不走普通公网出口，而是走服务商租用的国际线路，理论上更不容易被拥堵拖累。IPLC 是国际私有租用线路，IEPL 是国际以太网专线，两者都属于专线，细节上的区别见《<a href="/knowledge/iplc-iepl-zhongzhuan-quebie/">IPLC、IEPL 和中转有什么区别</a>》。',
+          '这个榜里的线路类型来自资料而不是机场牛的测试，凡是标注“第三方资料”的，意味着只有转述，没有官方页面逐条说明。线路类型说清楚，是评估专线机场的第一步，不是终点。',
+        ],
+      },
+    ],
+    outro: [
+      {
+        heading: '专线机场值不值得多花钱',
+        paragraphs: [
+          '专线通常比中转贵一截，对延迟敏感的场景（视频会议、实时游戏、直播）更有感；只是刷网页、看视频，质量好的中转和专线差距没有想象中大。所以先想清楚自己用在哪，再决定要不要为专线买单。',
+          '另外专线不是“永不掉线”的保证，节点超卖、机房故障照样会让体验变差。看专线的同时，仍然要看资料透明度、运营时长和有没有跑路信号。更多判断思路见《<a href="/guides/zhuanxian-jichang-zhidebuzhide/">专线机场值不值得买</a>》。',
+        ],
+      },
+    ],
+    faqs: [
+      { q: '专线机场一定比中转机场好吗？', a: '不一定。专线减少了被公网拥堵影响的概率，对低延迟场景更友好，但质量还取决于带宽、超卖程度和运维。中转线路里也有做了多线优化的，不能简单认为专线一定更好，要结合资料透明度和实际用途判断。' },
+      { q: '怎么确认一个机场真的是专线？', a: '先看官网是否明确写出线路类型，再看有没有第三方资料互相印证；机场牛榜单里所有线路信息都标注来源类型。真正确认还需要自己实测，比如用 traceroute 看路径、晚高峰多测几次延迟和丢包。' },
+      { q: 'IPLC 和 IEPL 哪个更好？', a: '两者都是专线，主要区别在接入方式和国内段是否经过运营商的公网。资料里同样写着专线的品牌，具体体验差异更多取决于机房、带宽和调度，不建议只凭这四个字母下结论，参考详细对比文章。' },
+      { q: '这个榜为什么没有写速度和延迟？', a: '速度和延迟需要固定条件下连续测试才有意义，机场牛目前没有测试记录，不会把来源方自己标注为模拟示例的数据拿来用。线路类型、价格和地区是资料里能核对的内容，所以榜单只展示这些。' },
+    ],
+    related: [
+      { label: '稳定机场推荐', href: '/rankings/stable/' },
+      { label: 'IPLC 术语解释', href: '/glossary/iplc/' },
+      { label: 'IEPL 术语解释', href: '/glossary/iepl/' },
+      { label: '机场对比总表', href: '/compare/' },
+    ],
+  },
+  monthly: {
+    title: '月付机场推荐 2026｜能按月付费先试再买的机场排行榜｜机场牛',
+    description:
+      '月付机场推荐：列出资料里明确记录了按月付费套餐的机场，附月付价格、流量额度和档位，说明为什么第一次买机场应该先选月付，以及月付试用期间该测什么，把试错成本降到最低。',
+    h1: '月付机场推荐：先买一个月，不合适就换',
+    lead: '第一次买机场，最稳妥的做法是先买月付。线路、客户端、客服、晚高峰体验，这些都要用过才知道。下面是资料里明确记录了“按月付费”套餐的品牌，月付价格和流量原样列出。',
+    keywords: ['月付机场', '月付机场推荐', '机场试用', '新手机场', '机场套餐'],
+    breadcrumb: '月付机场推荐',
+    intro: [
+      {
+        heading: '为什么推荐新手先选月付',
+        paragraphs: [
+          '机场的体验高度依赖你所在的网络环境：同一个机场，电信用户和移动用户、一线城市和三线城市，感受都可能不同。月付的价值就在于，用一个月的钱换一个“实际是否适合我”的答案，比读十篇测评都管用。',
+          '试用期间别只在白天测，晚高峰（晚上 8 点到 12 点）至少要覆盖几次；同时测一下你最常用的几个网站和应用，确认客户端能正常读订阅。具体测试步骤见《<a href="/tools/airport-checklist/">买前自检清单</a>》。',
+        ],
+      },
+    ],
+    outro: [
+      {
+        heading: '月付套餐的常见差异',
+        paragraphs: [
+          '月付单价通常比年付折算价高，换来的是灵活性。有些品牌的入门档只提供年付（比如部分最低价套餐），想月付要选更高一档，所以表里只收录资料明确写了“按月付费”的套餐。',
+          '续费时价格有可能和首月不同，是否支持优惠码、能否随时升级降级，都以官网为准。买之前把续费规则看清楚，比纠结少付几块钱更重要。',
+        ],
+      },
+    ],
+    faqs: [
+      { q: '月付机场和年付机场该怎么选？', a: '第一次购买建议先选月付，确认线路、客户端和客服满足需求后再考虑年付折扣。年付单价低，但一次性付出更多，万一服务商运营变化，退款和迁移成本更高，所以应该先试用再长期订阅。' },
+      { q: '月付机场试用期间要测什么？', a: '至少覆盖一次晚高峰，测你常用的网站、应用和视频；确认客户端能顺利导入订阅、节点是否常用、更新订阅是否正常；同时看客服响应速度和退款政策。几项都满意再续费或升级。' },
+      { q: '有没有一个月的免费试用？', a: '多数机场不提供免费试用，部分提供小流量试用或首月折扣，这类信息变化很快，以官网为准。付费小套餐等于最便宜的试用，比到处找不明来源的“免费节点”更可控。' },
+      { q: '资料里没有月付的品牌就不能月付吗？', a: '不一定，只是资料里没有明确记录。你可以直接到官网看套餐页面确认。机场牛只收录资料里能查到的信息，没有记录的不替商家补充。' },
+    ],
+    related: [
+      { label: '便宜机场推荐', href: '/rankings/cheap/' },
+      { label: '机场优惠码', href: '/coupons/' },
+      { label: '机场怎么选', href: '/guides/jichang-zenme-xuan/' },
+      { label: '买前自检清单', href: '/tools/airport-checklist/' },
+    ],
+  },
+  stable: {
+    title: '稳定机场推荐 2026｜稳定机场怎么判断与检测进度｜机场牛',
+    description:
+      '稳定机场推荐：稳定不是一句“从不掉线”，而是晚高峰丢包率、线路类型、节点分布和运营时长几项能核对的指标。这里说明怎么判断稳定机场，并如实公布机场牛的稳定性检测进度，没有测试记录就不给排名。',
+    h1: '稳定机场推荐：先弄清“稳定”到底怎么测',
+    lead: '几乎每个机场都说自己稳定，但“稳定”是一个跨时间的属性，一次测速、一张截图都证明不了。机场牛对稳定性的做法是：没有连续多天的测试记录，就不给稳定排名，页面上直接标注“实时检测中”。',
+    keywords: ['稳定机场', '稳定机场推荐', '晚高峰稳定', '机场丢包率', '不掉线机场'],
+    breadcrumb: '稳定机场推荐',
+    intro: [
+      {
+        heading: '稳定性检测进度：实时检测中',
+        paragraphs: [
+          '稳定性榜单的门槛是：同一品牌至少有 2 条本站测试记录，且时间跨度不少于 7 天，测试环境、客户端和协议要写明。目前这个门槛还没有任何品牌达到，所以榜单位置暂时留空，机场牛标注为“实时检测中”，不会拿宣传语、第三方转述或来源方自己标注为模拟示例的测速图来凑名次。',
+        ],
+      },
+    ],
+    outro: [
+      {
+        heading: '“稳定”要拆成这几项来看',
+        paragraphs: [
+          '晚高峰丢包率：晚上 8 点到 12 点国内网络最拥堵，丢包率和延迟抖动在这个时段最能说明问题。连续几天、多次测量取平均，才有参考价值。',
+          '线路类型：专线（IPLC/IEPL）比普通中转更少受公网拥堵影响，但专线也会因为超卖、机房故障出问题，不是稳定的护身符。',
+          '节点数量与分布：节点分散在不同机房、不同地区，单点故障的影响小；全挤在一个机房，机房一出问题就全军覆没。',
+          '运营时长与更新记录：运营久、持续有公开更新的服务商，至少证明团队在长期做这件事，但这一项不能单独拿来下结论。更详细的判断方法见《<a href="/guides/wending-jichang-zenme-pan/">稳定机场怎么判断</a>》。',
+        ],
+      },
+    ],
+    faqs: [
+      { q: '稳定机场怎么判断？', a: '看晚高峰丢包率和延迟抖动、线路类型（专线或中转）、节点数量与分布、运营时长这几项，并且要用连续多天的数据，而不是一次测速。“从来没掉线过”这类说法来自个人体验，受地区和时段影响很大，不能作为判断依据。' },
+      { q: '为什么机场牛没有给稳定机场排名？', a: '稳定性是跨时间的属性，需要连续多天、固定条件的测试记录。机场牛目前没有达到门槛的记录，所以不排名，统一标注“实时检测中”。宁可留白，也不拿没有来源的数据凑一张好看的榜单。' },
+      { q: '专线机场就一定稳定吗？', a: '不一定。专线减少了公网拥堵的影响，但节点超卖、机房故障、运维水平不足都会让体验变差。看专线的同时，仍然要看晚高峰表现、节点分布和资料透明度，不能只凭线路类型下结论。' },
+      { q: '自己怎么测一个机场稳不稳？', a: '先买月付小套餐，在晚高峰多个时段连续测几天：看常用网站的加载速度、用 ping 或测速工具看延迟抖动和丢包、观察是否频繁断线。几天下来的感受，比任何宣传页都靠谱。' },
+    ],
+    related: [
+      { label: '专线机场推荐', href: '/rankings/dedicated-line/' },
+      { label: '机场测速工具推荐', href: '/guides/jichang-ceshu-gongju/' },
+      { label: '机场连不上怎么办', href: '/troubleshooting/' },
+      { label: '机场推荐排行榜', href: '/rankings/' },
+    ],
+  },
+};
+
+const config = CONFIGS[kind];
+
+function bestPlan(row: BoardRow) {
+  return cheapestMonthly(row.provider);
+}
+
+let rows: BoardRow[] = [];
+if (kind === 'cheap' || kind === 'best-value') {
+  rows = board.rows
+    .filter((row) => bestPlan(row) !== null)
+    .sort((a, b) => bestPlan(a)!.monthly - bestPlan(b)!.monthly || a.rank - b.rank);
+} else if (kind === 'dedicated-line') {
+  rows = board.rows.filter((row) => hasDedicatedRoute(row.provider));
+} else if (kind === 'monthly') {
+  rows = board.rows.filter((row) => hasMonthlyPlan(row.provider));
+} else {
+  // stable：只列"资料基础"——专线线路 + 节点地区 ≥4，不含任何性能结论
+  rows = board.rows.filter(
+    (row) => hasDedicatedRoute(row.provider) && (row.provider.data.vendor.regions ?? []).length >= 4,
+  );
+}
+
+const canonicalUrl = resolveCanonicalUrl(`/rankings/${kind}/`);
+const itemListJsonLd =
+  kind !== 'stable'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: config.h1,
+        itemListElement: rows.map((row, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: row.provider.data.name,
+          url: resolveCanonicalUrl(`/airports/${row.provider.data.slug}/`),
+        })),
+      }
+    : null;
+void canonicalUrl;
+
+function ratio(row: BoardRow): string {
+  const best = bestPlan(row);
+  const gb = trafficGb(best?.plan.quota);
+  if (!best || gb === null) return '—';
+  return (gb / best.monthly).toFixed(1);
+}
+---
+
+<BaseLayout title={config.title} description={config.description} keywords={config.keywords}>
+  <Breadcrumbs
+    items={[
+      { name: '机场推荐排行榜', href: '/rankings/' },
+      { name: config.breadcrumb, href: `/rankings/${kind}/` },
+    ]}
+  />
+  <span class="section__eyebrow">RANKINGS · {kind.toUpperCase()}</span>
+  <h1>{config.h1}</h1>
+  <p class="lead">{config.lead}</p>
+
+  {
+    config.intro.map((block) => (
+      <>
+        <h2>{block.heading}</h2>
+        {block.paragraphs.map((p) => <p set:html={p} />)}
+      </>
+    ))
+  }
+
+  <h2>
+    {kind === 'cheap' && '便宜机场榜单：按月均价从低到高'}
+    {kind === 'best-value' && '性价比对照表：月均价、流量与每元流量'}
+    {kind === 'dedicated-line' && '资料里标注了专线线路的机场'}
+    {kind === 'monthly' && '资料里有月付套餐的机场'}
+    {kind === 'stable' && '稳定性判断的“资料基础”：专线线路加四个以上节点地区'}
+  </h2>
+
+  {
+    kind === 'stable' && (
+      <div class="callout callout--warn">
+        <h3>实时检测中</h3>
+        <p>
+          下表只列资料基础（有专线线路记录、节点地区不少于 4 个），<b>不是稳定性排名</b>。晚高峰丢包率、延迟抖动等指标目前没有机场牛的测试记录，标注为“实时检测中”，不拿第三方转述或模拟示例图充数。
+        </p>
+      </div>
+    )
+  }
+
+  {
+    rows.length === 0 ? (
+      <div class="empty-state">
+        <p class="empty-state__title">暂时没有符合条件的品牌</p>
+        <p>资料补齐后这里会自动出现。先看看<a href="/rankings/">机场推荐总榜</a>。</p>
+      </div>
+    ) : (
+      <div class="table-wrap">
+        <table>
+          <thead>
+            {kind === 'cheap' && (
+              <tr>
+                <th class="num">#</th>
+                <th>品牌</th>
+                <th>资料里的最低月均价</th>
+                <th>对应套餐</th>
+                <th>流量</th>
+                <th>档位</th>
+              </tr>
+            )}
+            {kind === 'best-value' && (
+              <tr>
+                <th class="num">#</th>
+                <th>品牌</th>
+                <th>月均价</th>
+                <th>流量额度</th>
+                <th>每元流量</th>
+                <th>线路</th>
+                <th>档位</th>
+              </tr>
+            )}
+            {kind === 'dedicated-line' && (
+              <tr>
+                <th class="num">名次</th>
+                <th>品牌</th>
+                <th>线路标注</th>
+                <th>价格</th>
+                <th>节点地区</th>
+                <th>档位</th>
+              </tr>
+            )}
+            {kind === 'monthly' && (
+              <tr>
+                <th class="num">名次</th>
+                <th>品牌</th>
+                <th>月付套餐</th>
+                <th>线路</th>
+                <th>档位</th>
+              </tr>
+            )}
+            {kind === 'stable' && (
+              <tr>
+                <th class="num">名次</th>
+                <th>品牌</th>
+                <th>线路标注</th>
+                <th>节点地区</th>
+                <th>晚高峰稳定性</th>
+              </tr>
+            )}
+          </thead>
+          <tbody>
+            {rows.map((row, index) => {
+              const p = row.provider.data;
+              const best = bestPlan(row);
+              const routes = (p.vendor.routes ?? []).map(cleanLabel).join('、') || '资料空白';
+              const regions = (p.vendor.regions ?? []).join('、') || '资料空白';
+              const tier = <span class={`tier-pill tier-pill--${row.tier}`}>{tierLabel.get(row.tier)}</span>;
+              const name = <a href={`/airports/${p.slug}/`}>{p.name}</a>;
+              if (kind === 'cheap')
+                return (
+                  <tr>
+                    <td class="num">{index + 1}</td>
+                    <td>{name}</td>
+                    <td class="num">¥{best!.monthly}/月</td>
+                    <td>{best!.plan.name}（{best!.plan.cycle || '周期未注明'}）</td>
+                    <td>{best!.plan.quota || '资料未注明'}</td>
+                    <td>{tier}</td>
+                  </tr>
+                );
+              if (kind === 'best-value')
+                return (
+                  <tr>
+                    <td class="num">{index + 1}</td>
+                    <td>{name}</td>
+                    <td class="num">¥{best!.monthly}/月</td>
+                    <td>{best!.plan.quota || '资料未注明'}</td>
+                    <td class="num">{ratio(row)}</td>
+                    <td>{routes}</td>
+                    <td>{tier}</td>
+                  </tr>
+                );
+              if (kind === 'dedicated-line')
+                return (
+                  <tr>
+                    <td class="num">{row.rank}</td>
+                    <td>{name}</td>
+                    <td>{routes}</td>
+                    <td>{best ? `${best.plan.price}${best.plan.cycle ? `（${best.plan.cycle}）` : ''}` : planFacts(row.provider)[0]?.price ?? '价格空白'}</td>
+                    <td>{regions}</td>
+                    <td>{tier}</td>
+                  </tr>
+                );
+              if (kind === 'monthly')
+                return (
+                  <tr>
+                    <td class="num">{row.rank}</td>
+                    <td>{name}</td>
+                    <td>
+                      {planFacts(row.provider)
+                        .filter((plan) => plan.cycle === '按月付费')
+                        .map((plan) => `${plan.name} ${plan.price}·${plan.quota || '流量未注明'}`)
+                        .join('；')}
+                    </td>
+                    <td>{routes}</td>
+                    <td>{tier}</td>
+                  </tr>
+                );
+              return (
+                <tr>
+                  <td class="num">{row.rank}</td>
+                  <td>{name}</td>
+                  <td>{routes}</td>
+                  <td>{regions}</td>
+                  <td><span class="source-badge">实时检测中</span></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  {
+    config.outro.map((block) => (
+      <>
+        <h2>{block.heading}</h2>
+        {block.paragraphs.map((p) => <p set:html={p} />)}
+      </>
+    ))
+  }
+
+  <h2>相关榜单与指南</h2>
+  <ul class="quick-links">
+    {config.related.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+  </ul>
+
+  <FaqBlock heading={`${config.breadcrumb}常见问题`} items={config.faqs} />
+
+  {itemListJsonLd && <script type="application/ld+json" set:html={JSON.stringify(itemListJsonLd)} />}
+</BaseLayout>

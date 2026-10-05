@@ -1,0 +1,31 @@
+---
+import ArticleHub from '../../components/ArticleHub.astro';
+---
+
+<ArticleHub
+  type="troubleshooting"
+  title="机场连不上怎么办：节点超时、订阅失败、速度慢故障排查｜机场牛"
+  description="机场连不上、节点全部超时、订阅更新失败、晚高峰变慢、ChatGPT 打不开——按症状分类的机场故障排查手册，先查本地再查节点，少走弯路。"
+  h1="机场故障排查：按症状一步步查"
+  breadcrumb="故障排查"
+  href="/troubleshooting/"
+  keywords={['机场连不上','节点超时','订阅更新失败','机场很慢','机场故障排查']}
+  eyebrow="TROUBLESHOOTING">
+  <Fragment slot="intro">
+    <h2>症状速查：你遇到的是哪一种</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>你看到的症状</th><th>先看哪一篇</th></tr></thead>
+        <tbody>
+          <tr><td>所有节点都显示超时</td><td><a href="/troubleshooting/jiedian-quanbu-chaoshi/">机场节点超时怎么办</a></td></tr>
+          <tr><td>订阅更新失败、链接无效</td><td><a href="/troubleshooting/dingyue-gengxin-shibai/">订阅更新失败怎么办</a></td></tr>
+          <tr><td>晚上特别慢、白天正常</td><td><a href="/troubleshooting/wanggaofeng-bian-man/">机场很慢怎么办</a></td></tr>
+          <tr><td>显示已连接但打不开网页</td><td><a href="/troubleshooting/yilianjie-dan-meiwang/">已连接但无法上网</a></td></tr>
+          <tr><td>ChatGPT 等 AI 工具打不开</td><td><a href="/troubleshooting/chatgpt-da-bukai/">ChatGPT 打不开怎么办</a></td></tr>
+          <tr><td>只有部分节点能用</td><td><a href="/troubleshooting/bufen-jiedian-keyong/">部分节点能用</a></td></tr>
+          <tr><td>系统代理开了但没生效</td><td><a href="/troubleshooting/clash-xitong-daili-wuxiao/">Clash 系统代理不生效</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </Fragment>
+</ArticleHub>

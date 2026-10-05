@@ -1,0 +1,70 @@
+---
+// 文章/专项页末尾的"当前资料里……"数据块：按 providers 真实字段筛选，不手写品牌结论。
+import type { BoardRow } from '../data/utils/board';
+import { RANK_BLOCK_META, cheapestMonthly, cleanLabel, filterRows, type RankBlockKind } from '../data/utils/provider-facts';
+
+interface Props {
+  kind: RankBlockKind;
+  rows: BoardRow[];
+  tiers: { id: string; label: string }[];
+  heading?: string;
+  limit?: number;
+}
+
+const { kind, rows, tiers, heading, limit = 8 } = Astro.props;
+const meta = RANK_BLOCK_META[kind];
+const picked = filterRows(kind, rows).slice(0, limit);
+const tierLabel = new Map(tiers.map((tier) => [tier.id, tier.label]));
+---
+
+{
+  picked.length > 0 && (
+    <section class="rank-block" aria-label={heading ?? meta.heading}>
+      <h2>{heading ?? meta.heading}</h2>
+      <p>{meta.intro}</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="num">名次</th>
+              <th>品牌</th>
+              <th>档位</th>
+              <th>资料里记录的价格</th>
+              <th>线路</th>
+            </tr>
+          </thead>
+          <tbody>
+            {picked.map((row) => {
+              const plans = row.provider.data.vendor.pricing ?? [];
+              const best = cheapestMonthly(row.provider);
+              const priceText = best
+                ? `${best.plan.price}${best.plan.cycle ? `（${best.plan.cycle}）` : ''}`
+                : plans[0]
+                  ? plans[0].price
+                  : '资料空白';
+              const routes = (row.provider.data.vendor.routes ?? []).map(cleanLabel).join('、') || '资料空白';
+              return (
+                <tr>
+                  <td class="num">{row.rank}</td>
+                  <td>
+                    <a href={`/airports/${row.provider.data.slug}/`}>{row.provider.data.name}</a>
+                  </td>
+                  <td>
+                    <span class={`tier-pill tier-pill--${row.tier}`}>{tierLabel.get(row.tier)}</span>
+                  </td>
+                  <td>{priceText}</td>
+                  <td>{routes}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <a class="btn btn--small" href={meta.link.href}>
+          {meta.link.label} →
+        </a>
+      </p>
+    </section>
+  )
+}

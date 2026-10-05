@@ -1,0 +1,48 @@
+---
+import { resolveCanonicalUrl } from '../config/seo';
+
+export interface BreadcrumbItem {
+  name: string;
+  href: string;
+}
+
+interface Props {
+  // 不包含首页，从首页之后的层级开始传入；组件会自动补上首页。
+  items: BreadcrumbItem[];
+}
+
+const { items } = Astro.props;
+const allItems: BreadcrumbItem[] = [{ name: '首页', href: '/' }, ...items];
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: allItems.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name,
+    item: resolveCanonicalUrl(item.href),
+  })),
+};
+---
+
+<nav aria-label="Breadcrumb" class="breadcrumbs">
+  <ol>
+    {
+      allItems.map((item, index) => {
+        const isLast = index === allItems.length - 1;
+        return (
+          <li>
+            {isLast ? (
+              <span aria-current="page">{item.name}</span>
+            ) : (
+              <a href={item.href}>{item.name}</a>
+            )}
+          </li>
+        );
+      })
+    }
+  </ol>
+</nav>
+
+<script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />

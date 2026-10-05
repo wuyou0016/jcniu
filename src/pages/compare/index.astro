@@ -1,0 +1,92 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import FaqBlock from '../../components/FaqBlock.astro';
+import { getBoard } from '../../data/utils/board';
+import { cheapestMonthly, cleanLabel, hasMonthlyPlan } from '../../data/utils/provider-facts';
+import { PAIR_COUNT_TOP, pairSlug } from '../../data/utils/compare';
+
+const board = await getBoard();
+const top = board.rows.slice(0, PAIR_COUNT_TOP);
+const tierLabel = new Map(board.tiers.map((t) => [t.id, t.label]));
+
+const faqs = [
+  { q: '机场怎么选？这张对比表怎么用？', a: '先在表里按你的预算筛出月均价合适的品牌，再看线路类型和协议是否符合需求，最后核对节点地区和客户端支持。表里的“资料空白”不是缺点标签，只是机场牛没有查到可核实的资料，建议到官网确认后再决定。' },
+  { q: '对比表里的价格是最终价格吗？', a: '不是。价格来自官网或第三方资料里记录的套餐文案，年付套餐按资料里的折算价列出，商家随时可能调整价格和优惠。真实价格请以官网结算页为准，对比表只用来缩小选择范围。' },
+  { q: '为什么对比表里没有速度和稳定性这一列？', a: '速度和稳定性需要连续多天、固定条件的测试，机场牛目前没有测试记录，也不采信来源方标注为模拟示例的测速图，所以这两项统一标注“实时检测中”，等有真实记录再展示。' },
+  { q: '两家机场哪个好，怎么看？', a: '先看你的需求：只要便宜选月均价低的，要低延迟选专线，要用 Clash 看客户端支持。前几名之间的两两对比页列出了价格、线路、协议、地区的具体差异，可以直接对照自己的使用场景。' },
+];
+---
+
+<BaseLayout
+  title="机场对比 2026｜机场价格、线路、协议、节点地区对比总表｜机场牛"
+  description="机场对比总表：28 家机场的档位、最低月均价、是否有月付、线路类型、协议、节点地区与客户端支持放在同一张表里，另有前几名两两对比页，机场怎么选、哪家价格更低一眼看清，下单前以官网为准。"
+  keywords={['机场对比', '机场价格对比', '机场怎么选', '机场对比表', '机场哪家好']}
+>
+  <Breadcrumbs items={[{ name: '机场对比', href: '/compare/' }]} />
+  <span class="section__eyebrow">COMPARE</span>
+  <h1>机场对比总表：价格、线路、协议、地区并排看</h1>
+  <p class="lead">
+    {board.rows.length} 家机场的关键资料放在同一张表里，横向拉一遍就知道谁便宜、谁有专线、谁写明了协议和客户端。“资料空白”意味着没有查到可核实的资料，不等于服务不好。
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="num">名次</th>
+          <th>品牌</th>
+          <th>档位</th>
+          <th>资料里最低月均价</th>
+          <th>月付</th>
+          <th>线路</th>
+          <th>协议</th>
+          <th>节点地区</th>
+          <th>客户端</th>
+          <th>晚高峰稳定性</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          board.rows.map((row) => {
+            const v = row.provider.data.vendor;
+            const best = cheapestMonthly(row.provider);
+            return (
+              <tr>
+                <td class="num">{row.rank}</td>
+                <td><a href={`/airports/${row.provider.data.slug}/`}>{row.provider.data.name}</a></td>
+                <td><span class={`tier-pill tier-pill--${row.tier}`}>{tierLabel.get(row.tier)}</span></td>
+                <td class="num">{best ? `¥${best.monthly}/月` : '资料空白'}</td>
+                <td>{hasMonthlyPlan(row.provider) ? '有' : '资料未记录'}</td>
+                <td>{(v.routes ?? []).map(cleanLabel).join('、') || '资料空白'}</td>
+                <td>{(v.protocols ?? []).map(cleanLabel).join('、') || '资料空白'}</td>
+                <td>{(v.regions ?? []).join('、') || '资料空白'}</td>
+                <td>{(v.clientSupport ?? []).join('、') || '资料空白'}</td>
+                <td><span class="source-badge">实时检测中</span></td>
+              </tr>
+            );
+          })
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">月均价来自套餐文案里能读出的每月价格；表中信息来源见各品牌档案，价格以官网结算页为准。</p>
+
+  <h2>前 {PAIR_COUNT_TOP} 名两两对比</h2>
+  <p>榜单前几名最常被拿来比较，下面每一对都有单独的对比页，列出价格、线路、协议、地区的具体差异。</p>
+  <div class="entry-grid">
+    {
+      top.flatMap((a, i) =>
+        top.slice(i + 1).map((b) => (
+          <a class="entry-card" href={`/compare/${pairSlug(a.provider.data.slug, b.provider.data.slug)}/`}>
+            <span class="entry-card__kicker">VS</span>
+            <span class="entry-card__title">{a.provider.data.name} 和 {b.provider.data.name}哪个好</span>
+            <span class="entry-card__cta">看对比 →</span>
+          </a>
+        )),
+      )
+    }
+  </div>
+
+  <FaqBlock heading="机场对比常见问题" items={faqs} />
+</BaseLayout>

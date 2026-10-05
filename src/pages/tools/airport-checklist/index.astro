@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+
+const items = [
+  ['price', '价格和流量在官网能直接看到', '不注册、不问客服就能看到套餐、价格、流量和付费周期'],
+  ['source', '价格有至少一个可追溯的来源', '官网、第三方资料或站长确认，而不是"听说"'],
+  ['route', '线路类型写明了', '专线（IPLC/IEPL）还是中转，有没有明确说法'],
+  ['proto', '协议和你的客户端对得上', '订阅用的协议，你的客户端当前版本是否支持'],
+  ['monthly', '有月付套餐可以先试', '第一次买先月付，不要直接上年付'],
+  ['refund', '看过退款政策', '能不能退、几天内、退多少，写在哪里'],
+  ['renew', '搞清楚了续费价格', '首月优惠和续费价可能不一样，优惠码只限新用户很常见'],
+  ['coupon', '优惠码在结算页验证过', '以结算页显示的折后价为准，不看别人转载'],
+  ['peak', '计划在晚高峰试用几次', '晚上 8 点到 12 点至少测几次延迟和丢包'],
+  ['support', '找得到客服入口', '工单、社群或邮箱，出了问题知道找谁'],
+  ['flags', '没有出现跑路预警信号', '客服失联、域名频繁变、突然猛推长期套餐'],
+  ['pay', '用了限额或可退款的付款方式', '不要一次预付很多年'],
+];
+---
+
+<BaseLayout
+  title="买机场前自检清单｜12 项下单前该核对的事（价格、线路、退款、跑路信号）｜机场牛"
+  description="买机场前自检清单：价格流量是否公开、线路和协议是否写明、有没有月付、退款和续费规则、优惠码验证、晚高峰试用、跑路预警信号等十二项检查，勾选后给出风险提示，状态只保存在你自己的浏览器里。"
+  keywords={['机场自检', '机场避坑指南', '机场怎么选', '机场跑路预警', '机场评测方法']}
+>
+  <Breadcrumbs items={[{ name: '在线工具', href: '/tools/' }, { name: '买前自检清单', href: '/tools/airport-checklist/' }]} />
+  <span class="section__eyebrow">CHECK</span>
+  <h1>买机场前自检清单：下单前先过这十二项</h1>
+  <p class="lead">一项一项勾，勾不上的就是你要先去核对的地方。勾选状态只保存在你自己的浏览器里，不会上传。</p>
+
+  <div class="card">
+    <div class="meter" aria-hidden="true"><span id="bar"></span></div>
+    <p id="score" style="margin:0.7rem 0 0;font-weight:900"></p>
+  </div>
+
+  <ul class="check-list" style="margin-top:1.2rem">
+    {items.map((it) => (
+      <li>
+        <label>
+          <input type="checkbox" data-key={it[0]} />
+          <span>{it[1]}<small>{it[2]}</small></span>
+        </label>
+      </li>
+    ))}
+  </ul>
+
+  <button class="btn btn--small" id="reset" type="button">全部清空</button>
+  <p style="margin-top:1.4rem">还有没勾上的？看<a href="/airport-warnings/">机场跑路预警</a>、<a href="/rankings/monthly/">月付机场推荐</a>，或者回<a href="/rankings/">排行榜</a>找资料更完整的品牌。</p>
+</BaseLayout>
+
+<script is:inline>
+  (function () {
+    var boxes = Array.prototype.slice.call(document.querySelectorAll('input[data-key]'));
+    var bar = document.getElementById('bar'), score = document.getElementById('score');
+    var KEY = 'jn-checklist';
+    var saved = {};
+    try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+    boxes.forEach(function (b) { b.checked = !!saved[b.dataset.key]; });
+    function update() {
+      var done = boxes.filter(function (b) { return b.checked; }).length;
+      bar.style.width = Math.round((done / boxes.length) * 100) + '%';
+      var msg = done === boxes.length ? '十二项全勾上了，可以下单——还是建议先买月付。' : done >= 9 ? '大部分已核对，剩下几项补完再付款更稳。' : done >= 5 ? '还有不少没核对，建议先补价格来源、退款和续费规则。' : '风险还很大，先别付款。';
+      score.textContent = '已核对 ' + done + ' / ' + boxes.length + ' 项：' + msg;
+      var s = {}; boxes.forEach(function (b) { if (b.checked) s[b.dataset.key] = 1; });
+      try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
+    }
+    boxes.forEach(function (b) { b.addEventListener('change', update); });
+    document.getElementById('reset').addEventListener('click', function () { boxes.forEach(function (b) { b.checked = false; }); update(); });
+    update();
+  })();
+</script>

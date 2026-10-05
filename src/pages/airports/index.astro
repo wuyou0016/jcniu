@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { getBoard } from '../../data/utils/board';
+import { cheapestMonthly, cleanLabel } from '../../data/utils/provider-facts';
+
+const board = await getBoard();
+---
+
+<BaseLayout
+  title="机场库｜28 家机场档案：价格、线路、协议、客户端资料一览｜机场牛"
+  description="机场库收录 28 家机场和梯子服务商的档案：每家都有套餐价格、IPLC/IEPL 线路、VLESS/Trojan 协议、节点地区和客户端支持，资料来源逐条标注，按夯到拉分档排列，点进去即可核对。"
+  keywords={['机场库', '机场大全', '机场推荐', '机场价格对比', '机场档案']}
+>
+  <Breadcrumbs items={[{ name: '机场库', href: '/airports/' }]} />
+  <span class="section__eyebrow">DIRECTORY</span>
+  <h1>机场库：{board.rows.length} 家机场档案一览</h1>
+  <p class="lead">
+    机场库按夯到拉的档位列出所有已收录品牌，每家一份档案：套餐价格、线路、协议、节点地区、客户端支持，以及这些信息来自官方还是第三方。想快速比较，直接看<a href="/compare/">机场对比总表</a>。
+  </p>
+
+  {
+    board.tiers.map((tier) => (
+      <section class="section" id={`tier-${tier.id}`}>
+        <div class="section__head">
+          <h2>
+            <span class={`tier-pill tier-pill--${tier.id}`}>{tier.label}</span> {tier.tagline}
+          </h2>
+        </div>
+        <p class="muted">{tier.rule}</p>
+        <div class="entry-grid">
+          {tier.rows.map((row) => {
+            const best = cheapestMonthly(row.provider);
+            const routes = (row.provider.data.vendor.routes ?? []).map(cleanLabel).join('、');
+            return (
+              <a class="entry-card" href={`/airports/${row.provider.data.slug}/`}>
+                <span class="entry-card__kicker">NO.{String(row.rank).padStart(2, '0')}</span>
+                <span class="entry-card__title">{row.provider.data.name}机场</span>
+                <p class="entry-card__description">
+                  {best ? `${best.plan.price}${best.plan.cycle ? `（${best.plan.cycle}）` : ''}` : '价格资料空白'}
+                  {routes ? ` · ${routes}` : ''}
+                </p>
+                <span class="entry-card__cta">查看档案 →</span>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+    ))
+  }
+</BaseLayout>

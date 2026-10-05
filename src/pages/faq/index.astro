@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import FaqBlock from '../../components/FaqBlock.astro';
+import { FAQ_CLUSTERS, FAQ_ITEMS } from '../../data/seo/faq-data';
+import { SEO_COPY } from '../../data/seo/site-copy';
+
+// 总页统一输出一份包含全部问答的 FAQPage JSON-LD，各簇的可见区块不再重复输出。
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQ_ITEMS.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a },
+  })),
+};
+
+const copy = SEO_COPY.faqPage;
+
+const clusters = FAQ_CLUSTERS.map((cluster) => ({
+  ...cluster,
+  items: FAQ_ITEMS.filter((item) => item.cluster === cluster.id),
+})).filter((cluster) => cluster.items.length > 0);
+---
+
+<BaseLayout
+  title={copy.title(FAQ_ITEMS.length)}
+  description={copy.description(FAQ_ITEMS.length, clusters.length)}
+  keywords={copy.keywords}
+>
+  <Breadcrumbs items={[{ name: copy.breadcrumb, href: '/faq/' }]} />
+
+  <h1>{copy.h1}</h1>
+  <p>{copy.intro(FAQ_ITEMS.length, clusters.length)}</p>
+
+  <nav aria-label={copy.navLabel} class="faq-nav">
+    <ul class="quick-links">
+      {
+        clusters.map((cluster) => (
+          <li>
+            <a href={`#${cluster.id}`}>{cluster.title}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  {
+    clusters.map((cluster) => (
+      <>
+        <div id={cluster.id} class="faq-cluster-anchor" />
+        <FaqBlock heading={cluster.title} items={cluster.items} jsonLd={false} />
+        <p class="faq-cluster-intro">{cluster.intro}</p>
+      </>
+    ))
+  }
+
+  <h2>{copy.moreHeading}</h2>
+  <ul class="quick-links">
+    <li><a href="/tag/">{copy.moreLinks.tag}</a></li>
+    <li><a href="/airports/">{copy.moreLinks.airports}</a></li>
+    <li><a href="/rankings/">{copy.moreLinks.rankings}</a></li>
+    <li><a href="/knowledge/">{copy.moreLinks.knowledge}</a></li>
+    <li><a href="/troubleshooting/">{copy.moreLinks.troubleshooting}</a></li>
+  </ul>
+
+  <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} />
+</BaseLayout>
+
+<style>
+  .faq-nav {
+    margin: var(--space-6) 0;
+  }
+
+  .faq-cluster-anchor {
+    scroll-margin-top: var(--space-12);
+  }
+
+  .faq-cluster-intro {
+    margin-top: var(--space-3);
+    color: var(--color-muted);
+    font-size: 0.875rem;
+  }
+</style>

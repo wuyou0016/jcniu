@@ -1,0 +1,121 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import TierBoard from '../../components/TierBoard.astro';
+import RankList from '../../components/RankList.astro';
+import FaqBlock from '../../components/FaqBlock.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+import { getBoard } from '../../data/utils/board';
+
+const board = await getBoard();
+const snapshot = board.snapshotAt.toISOString().slice(0, 10);
+
+const subRankings = [
+  { kicker: 'CHEAP', title: '便宜机场推荐', text: '按资料里的月均价从低到高排。', href: '/rankings/cheap/' },
+  { kicker: 'VALUE', title: '性价比机场推荐', text: '价格之外再看流量额度和线路。', href: '/rankings/best-value/' },
+  { kicker: 'DEDICATED', title: '专线机场推荐', text: 'IPLC、IEPL、企业专线品牌。', href: '/rankings/dedicated-line/' },
+  { kicker: 'MONTHLY', title: '月付机场推荐', text: '能按月付费、先试再买的品牌。', href: '/rankings/monthly/' },
+  { kicker: 'STABLE', title: '稳定机场推荐', text: '稳定怎么判断，检测进度如何。', href: '/rankings/stable/' },
+];
+
+const faqs = [
+  {
+    q: '2026 年机场推荐排行榜靠谱吗，数据是怎么来的？',
+    a: '榜单里每个品牌的价格、线路、协议、节点地区和客户端支持，都整理自官网公开信息或第三方资料，页面上逐条标注来源类型。机场牛目前没有自己的测速记录，所以榜单只反映资料透明度，不包含速度排名，也不采信来源方自己标注为模拟示例的测速图。',
+  },
+  {
+    q: '为什么前七名的顺序是固定的，后面的又是怎么排的？',
+    a: '前七名顺序为编辑指定，沿用热门榜单口径：无忧链接、飞猫云、微风网络、Firefly、光速云、星岛梦、闪跃。第八名起按资料完整度排列：先是价格和线路至少有一项公开的品牌，最后是价格线路都查不到资料的品牌。每家都附了理由，方便你核对。',
+  },
+  {
+    q: '榜单多久更新一次？',
+    a: '当前快照日期见页面顶部。品牌资料、价格或来源有变化时，机场牛会更新对应品牌档案并同步调整档位，更新时间记录在《更新记录》页。价格随时可能变，下单前请以官网结算页为准。',
+  },
+  {
+    q: '想找便宜机场、专线机场，应该看哪个榜？',
+    a: '想省钱看便宜机场推荐榜，按月均价排序；想要专线线路看专线机场推荐榜，只收录资料里写明了 IPLC、IEPL 或企业专线的品牌；想先试再买看月付机场推荐榜。三个专项榜都从同一份资料筛选，不引入额外评分。',
+  },
+];
+
+const itemListJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: '机场推荐排行榜（夯到拉）',
+  itemListElement: board.rows.map((row) => ({
+    '@type': 'ListItem',
+    position: row.rank,
+    name: row.provider.data.name,
+    url: resolveCanonicalUrl(`/airports/${row.provider.data.slug}/`),
+  })),
+};
+---
+
+<BaseLayout
+  title="机场推荐排行榜 2026｜机场梯子夯到拉分档总榜｜机场牛"
+  description="2026 机场推荐排行榜：28 家机场按资料透明度分成夯、顶级、人上人、NPC、路人五档并设拉完了名单，附每家价格、IPLC/IEPL 线路、协议与地区资料，便宜机场、专线机场、稳定机场专项榜一键直达，下单前先看清再选。"
+  keywords={['机场推荐', '机场排行榜', '机场推荐排行榜', '便宜机场', '专线机场', '稳定机场', '性价比机场']}
+>
+  <Breadcrumbs items={[{ name: '机场推荐排行榜', href: '/rankings/' }]} />
+  <span class="section__eyebrow">RANKINGS · 快照 {snapshot}</span>
+  <h1>2026 机场推荐排行榜：夯到拉分档总榜</h1>
+  <p class="lead">
+    这张榜按资料透明度把 {board.rows.length} 家机场分成五档并设“拉完了”名单。夯是资料全能在官网核对的，路人是价格线路都查不到的，拉完了是站长标注已跑路的；档位不代表速度和稳定性，那两项机场牛还在检测，没有测试记录之前不会给数字。
+  </p>
+
+  <TierBoard tiers={board.tiers} showRules={false} />
+
+  <div class="callout">
+    <h3>这张榜怎么读</h3>
+    <p>
+      先看档位再看名次：同一档里名次靠前的资料更完整。前七名顺序为编辑指定，第八名起按资料完整度排列；每一家的理由写在下面，来源和价格都能到品牌档案里逐条核对。完整规则见《<a href="/about/">夯到拉怎么评</a>》。
+    </p>
+  </div>
+
+  <h2>专项榜：按你的需求筛</h2>
+  <div class="entry-grid">
+    {
+      subRankings.map((item) => (
+        <a class="entry-card" href={item.href}>
+          <span class="entry-card__kicker">{item.kicker}</span>
+          <span class="entry-card__title">{item.title}</span>
+          <p class="entry-card__description">{item.text}</p>
+          <span class="entry-card__cta">打开榜单 →</span>
+        </a>
+      ))
+    }
+  </div>
+
+  <h2>每一家的名次、档位和理由</h2>
+  <RankList rows={board.rows} tiers={board.tiers} groupByTier />
+
+  <h2>三步用好这张榜</h2>
+  <ol class="steps">
+    <li><b>先按需求选榜</b>想省钱看便宜机场榜，要专线看专线机场榜，想先试看月付榜，不知道从哪开始就看总榜前七名。</li>
+    <li><b>再看档位和来源</b>同一档里名次靠前的资料更完整；点进品牌档案，价格、线路、协议每一条都标了来源类型和获取日期。</li>
+    <li><b>下单前自己核对</b>价格以官网结算页为准，用<a href="/tools/airport-checklist/">买前自检清单</a>过一遍退款、续费和跑路信号，再决定买多久。</li>
+  </ol>
+
+  <h2>怎么升档、怎么降档</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>情形</th><th>档位变化</th><th>举例（虚构，说明规则用）</th></tr></thead>
+      <tbody>
+        <tr><td>补齐了官网上的线路、协议或客户端说明</td><td>往上升一档或半档</td><td>某品牌从“价格公开、线路空白”补到“价格线路协议都写明”</td></tr>
+        <tr><td>价格得到第二个独立来源印证，或站长直接确认</td><td>可进入顶级候选</td><td>价格从单一来源变成两处一致</td></tr>
+        <tr><td>来源方自己标注数据为模拟示例、归属待核验</td><td>该部分不采信，可能降档</td><td>来源页测速图被标成示例，整张图不用</td></tr>
+        <tr><td>官网打不开、资料被撤下</td><td>降到路人档，状态标观察中</td><td>官网入口长期无法访问</td></tr>
+        <tr><td>站长标注已跑路</td><td>进入“拉完了”名单</td><td>由站长标注并注明来源和日期，不收传闻</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">升降档只依据资料变化，不依据合作关系；前七名顺序为编辑指定，变动会记录在<a href="/changelog/">更新记录</a>。</p>
+
+  <h2>榜单方法说明</h2>
+  <div class="info-panel">
+    <p>{board.methodology}</p>
+  </div>
+
+  <FaqBlock heading="机场推荐排行榜常见问题" items={faqs} />
+
+  <script type="application/ld+json" set:html={JSON.stringify(itemListJsonLd)} />
+</BaseLayout>

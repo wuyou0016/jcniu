@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+
+const tools = [
+  { kicker: 'CALC', title: '机场价格换算器', text: '把年付、季付、月付统一折成月均价，再按流量算每 GB 成本，三个套餐并排比。', href: '/tools/cost-calculator/' },
+  { kicker: 'PICK', title: '客户端选择器', text: '选好设备和协议，告诉你该用 Clash Verge、小火箭、v2rayN 还是 Sing-box。', href: '/tools/client-picker/' },
+  { kicker: 'CHECK', title: '买前自检清单', text: '十二项下单前该核对的事，勾完看看还剩几个风险没排除，结果只存在你自己的浏览器里。', href: '/tools/airport-checklist/' },
+];
+---
+
+<BaseLayout
+  title="机场在线工具｜价格换算器、客户端选择器、买前自检清单｜机场牛"
+  description="机场牛在线工具：机场价格换算器把年付月付折成月均价和每 GB 成本，客户端选择器按设备和协议推荐 Clash、小火箭、v2rayN，买前自检清单帮你下单前过一遍风险，全部在浏览器本地运行。"
+  keywords={['机场工具', '梯子工具', '机场价格换算', '客户端选择', '机场自检']}
+>
+  <Breadcrumbs items={[{ name: '在线工具', href: '/tools/' }]} />
+  <span class="section__eyebrow">TOOLS</span>
+  <h1>机场在线工具：下单前先算一算、查一查</h1>
+  <p class="lead">三个小工具都在浏览器里本地运行，输入的内容不会上传。想了解怎么选梯子工具，也可以看<a href="/guides/tizi-gongju-zenme-xuan/">梯子工具怎么选</a>。</p>
+  <div class="entry-grid">
+    {tools.map((t) => (
+      <a class="entry-card" href={t.href}>
+        <span class="entry-card__kicker">{t.kicker}</span>
+        <span class="entry-card__title">{t.title}</span>
+        <p class="entry-card__description">{t.text}</p>
+        <span class="entry-card__cta">打开工具 →</span>
+      </a>
+    ))}
+  </div>
+</BaseLayout>

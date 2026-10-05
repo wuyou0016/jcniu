@@ -1,0 +1,69 @@
+---
+import { siteConfig } from '../config/site';
+import {
+  BRAND_TITLE_SUFFIX,
+  CANONICAL_HOST,
+  DEFAULT_ROBOTS,
+  TWITTER_CARD_TYPE,
+  defaultOpenGraph,
+  resolveCanonicalUrl,
+  robotsToString,
+  type RobotsDirective,
+} from '../config/seo';
+
+interface Props {
+  title: string;
+  description?: string;
+  pathname: string;
+  robots?: RobotsDirective;
+  ogType?: 'website' | 'article';
+  ogImage?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  keywords?: string[];
+}
+
+const {
+  title,
+  description = siteConfig.defaultDescription,
+  pathname,
+  robots = DEFAULT_ROBOTS,
+  ogType = defaultOpenGraph.type,
+  ogImage = siteConfig.defaultOgImage,
+  publishedTime,
+  modifiedTime,
+  keywords,
+} = Astro.props;
+
+// title 若已包含品牌名则不重复拼接，避免"梯子IT实验室｜XXX｜梯子IT实验室"。
+const resolvedTitle = title.includes(siteConfig.brandName) ? title : `${title}${BRAND_TITLE_SUFFIX}`;
+
+const canonicalUrl = resolveCanonicalUrl(pathname);
+const absoluteOgImage = ogImage.startsWith('http') ? ogImage : `${CANONICAL_HOST}${ogImage}`;
+const robotsContent = robotsToString(robots);
+---
+
+<title>{resolvedTitle}</title>
+<meta name="description" content={description} />
+{keywords && keywords.length > 0 && <meta name="keywords" content={keywords.join(',')} />}
+<link rel="canonical" href={canonicalUrl} />
+<meta name="robots" content={robotsContent} />
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="icon" href="/favicon.ico" />
+
+<meta property="og:title" content={resolvedTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:type" content={ogType} />
+<meta property="og:site_name" content={defaultOpenGraph.siteName} />
+<meta property="og:locale" content={defaultOpenGraph.locale} />
+<meta property="og:image" content={absoluteOgImage} />
+
+<meta name="twitter:card" content={TWITTER_CARD_TYPE} />
+<meta name="twitter:title" content={resolvedTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={absoluteOgImage} />
+
+{publishedTime && <meta property="article:published_time" content={publishedTime} />}
+{modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}

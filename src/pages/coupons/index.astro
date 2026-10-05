@@ -1,0 +1,123 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import FaqBlock from '../../components/FaqBlock.astro';
+import { getBoard } from '../../data/utils/board';
+
+const board = await getBoard();
+
+// 只收录第三方资料里"白纸黑字写过"的优惠码：从 thirdPartyNotes 里逐条抽取，原文照抄，
+// 注明来源和获取日期；没有任何记录的品牌明确列在"暂无优惠码记录"里，不编折扣码。
+const CODE = /优惠码\s*([A-Za-z0-9]{4,})/;
+interface Coupon {
+  name: string;
+  slug: string;
+  rank: number;
+  code: string;
+  claim: string;
+  source: string;
+  date: string;
+  contradictory: boolean;
+}
+const coupons: Coupon[] = [];
+const withNote: string[] = [];
+for (const row of board.rows) {
+  for (const note of row.provider.data.thirdPartyNotes ?? []) {
+    const m = note.claim.match(CODE);
+    if (!m) continue;
+    withNote.push(row.provider.data.slug);
+    coupons.push({
+      name: row.provider.data.name,
+      slug: row.provider.data.slug,
+      rank: row.rank,
+      code: m[1]!,
+      claim: note.claim,
+      source: note.source,
+      date: note.date.toISOString().slice(0, 10),
+      contradictory: /矛盾/.test(note.claim),
+    });
+  }
+}
+const withoutCoupon = board.rows.filter((row) => !withNote.includes(row.provider.data.slug));
+
+const faqs = [
+  { q: '机场优惠码在哪找？', a: '最可靠的来源是机场官网的活动页、结算页的优惠码输入框和官方公告。第三方导航站会转载优惠码，但转载可能过期。机场牛只收录第三方资料里明文记录过的优惠码，并注明来源和获取日期，使用前请在官网结算页验证。' },
+  { q: '优惠码怎么用？', a: '一般在结算页的“优惠码”输入框填入后点击应用，页面会显示折扣后的价格；如果提示无效，可能是已过期、仅限新用户或不适用于当前套餐（比如年付小包常常不参与折扣）。以结算页显示的最终价格为准。' },
+  { q: '为什么有的机场没有优惠码？', a: '要么官方没有公开优惠码，要么机场牛没有查到可核实的来源。没有记录不代表没有折扣，可能只在活动期间发放。机场牛不会为了让表格好看而编造或猜测优惠码。' },
+  { q: '优惠码失效了怎么办？', a: '先到官网活动页看有没有新的折扣，再看是否有年付、周年庆等官方促销。失效的优惠码不用纠结，价格以结算页为准；也可以向我们反馈，确认后更新记录。' },
+  { q: '优惠码有哪些常见的坑？', a: '常见情况有：优惠码只对新用户或首单有效、续费恢复原价、年付小包不参与折扣、同一页面对优惠码的说法前后矛盾。遇到“折扣特别夸张”的码要提高警惕，先看看这家机场的资料透明度。' },
+];
+---
+
+<BaseLayout
+  title="机场优惠码 2026｜全部机场当前折扣码汇总与使用方法｜机场牛"
+  description="机场优惠码汇总：整理第三方资料里记载过的机场优惠码，逐条注明品牌、折扣说明、来源和获取日期，标出前后矛盾的记录，说明优惠码怎么用、怎么判断还有没有效，没有记录的机场如实标注，下单以官网结算页为准。"
+  keywords={['机场优惠码', '机场折扣码', '机场折扣', '机场优惠', '机场价格对比']}
+>
+  <Breadcrumbs items={[{ name: '机场优惠码', href: '/coupons/' }]} />
+  <span class="section__eyebrow">COUPONS</span>
+  <h1>机场优惠码：全部机场当前折扣码汇总</h1>
+  <p class="lead">
+    下面每一条优惠码都来自第三方资料的明文记录，注明了品牌、原文说法、来源和获取日期。优惠码随时可能过期或改规则，<b>是否有效、折后价多少，以官网结算页为准</b>。
+  </p>
+
+  <div class="callout callout--warn">
+    <h3>这些优惠码是怎么来的</h3>
+    <p>
+      机场牛不发放、不生成优惠码，只转录第三方资料里记载过的，并在原文自相矛盾时原样标出。查不到记录的品牌列在页面下方，不编折扣码，也不猜折扣力度。
+    </p>
+  </div>
+
+  <h2>目前有优惠码记录的机场</h2>
+  {
+    coupons.length > 0 ? (
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>品牌</th>
+              <th>优惠码</th>
+              <th>资料原文</th>
+              <th>来源与日期</th>
+            </tr>
+          </thead>
+          <tbody>
+            {coupons.map((c) => (
+              <tr>
+                <td>
+                  <a href={`/airports/${c.slug}/`}>{c.name}</a>
+                  <div class="muted">榜单第 {c.rank} 名</div>
+                </td>
+                <td class="num"><code>{c.code}</code></td>
+                <td>
+                  {c.claim}
+                  {c.contradictory && <div><span class="source-badge">原文前后矛盾</span></div>}
+                </td>
+                <td>{c.source}<div class="muted">获取于 {c.date}</div></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ) : (
+      <div class="empty-state"><p class="empty-state__title">暂时没有优惠码记录</p></div>
+    )
+  }
+
+  <h2>暂无优惠码记录的机场</h2>
+  <p>下面这些品牌在已收录的资料里没有查到优惠码，不代表没有折扣，请直接到官网结算页确认。</p>
+  <ul class="quick-links">
+    {withoutCoupon.map((row) => <li><a href={`/airports/${row.provider.data.slug}/`}>{row.provider.data.name}</a></li>)}
+  </ul>
+
+  <h2>机场优惠码怎么用，怎么判断还有效</h2>
+  <ol>
+    <li><b>先到官网选好套餐</b>，进入结算页，找到“优惠码”输入框。</li>
+    <li><b>填入优惠码并应用</b>，看价格是否发生变化；没变化多半是失效、仅限新用户或不适用于该套餐。</li>
+    <li><b>对比折后价和月付价</b>：年付折扣再大，也要先确认能不能退款，别为了折扣把第一次就押一整年。</li>
+    <li><b>留意续费规则</b>：很多优惠只管首次付款，续费会恢复原价。</li>
+  </ol>
+  <p>想把价格换算成月均价再比，用<a href="/tools/cost-calculator/">机场价格换算器</a>；想先看哪些机场便宜，去<a href="/rankings/cheap/">便宜机场推荐榜</a>。</p>
+
+  <FaqBlock heading="机场优惠码常见问题" items={faqs} />
+</BaseLayout>

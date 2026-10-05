@@ -1,0 +1,53 @@
+---
+// "夯到拉"五档榜：一档一行，行头是大号档位名（红橙黄绿灰），行内是该档所有品牌的名次胶囊。
+// 第 1 名（夯档）用金色加大胶囊 + 金色渐变文字徽章。
+import type { BoardTier } from '../data/utils/board';
+
+interface Props {
+  tiers: BoardTier[];
+  showRules?: boolean;
+}
+
+const { tiers, showRules = true } = Astro.props;
+---
+
+<div class="tierboard" role="list">
+  {
+    tiers.map((tier) => (
+      <div class={`tier-row tier-row--${tier.id}`} role="listitem">
+        <div class="tier-row__head">
+          <span class="tier-row__label">{tier.label}</span>
+          <span class="tier-row__tagline">{tier.tagline}</span>
+        </div>
+        <div class="tier-row__body">
+          {showRules && <p class="tier-row__rule">{tier.rule}</p>}
+          <div class="tier-row__chips">
+            {tier.rows.map((row) => (
+              <a
+                class={`brand-chip${row.rank === 1 ? ' brand-chip--hang' : ''}`}
+                href={`/airports/${row.provider.data.slug}/`}
+                data-provider={row.provider.data.slug}
+                data-provider-name={row.provider.data.name}
+              >
+                <span class="brand-chip__rank">{row.rank}</span>
+                <span>{row.provider.data.name}</span>
+                {row.rank === 1 && (
+                  <span class="badge badge--gold">
+                    <span>👑 综合第一名</span>
+                  </span>
+                )}
+              </a>
+            ))}
+            {tier.fallen.map((f) => (
+              <a class="fallen-chip" href="/airport-warnings/#fallen" title={`${f.status}（${f.source}，${f.markedAt.toISOString().slice(0, 10)}）`}>
+                <s>{f.name}</s>
+                <span class="fallen-chip__flag">{f.status}</span>
+              </a>
+            ))}
+            {tier.rows.length === 0 && tier.fallen.length === 0 && <span class="muted">这一档暂时没有品牌。</span>}
+          </div>
+        </div>
+      </div>
+    ))
+  }
+</div>

@@ -1,0 +1,118 @@
+---
+// 完整榜单列表：名次 + 品牌 + 档位徽章 + 一句话理由 + 关键资料（价格/线路/协议/地区）。
+// 所有资料字段只读 providers.json 真实字段，缺失就不显示，不补默认值。
+import type { BoardRow, BoardTier } from '../data/utils/board';
+import { cheapestMonthly, cleanLabel } from '../data/utils/provider-facts';
+
+interface Props {
+  rows: BoardRow[];
+  tiers: BoardTier[];
+  groupByTier?: boolean;
+}
+
+const { rows, tiers, groupByTier = false } = Astro.props;
+const tierById = new Map(tiers.map((tier) => [tier.id, tier]));
+
+function meta(row: BoardRow) {
+  const v = row.provider.data.vendor;
+  const items: { label: string; value: string }[] = [];
+  const best = cheapestMonthly(row.provider);
+  if (best) {
+    items.push({ label: '资料里最低价', value: `${best.plan.price}${best.plan.cycle ? `（${best.plan.cycle}）` : ''}` });
+  } else if ((v.pricing ?? []).length > 0) {
+    items.push({ label: '价格', value: v.pricing![0]!.price });
+  }
+  const routes = (v.routes ?? []).map(cleanLabel).filter(Boolean);
+  if (routes.length) items.push({ label: '线路', value: routes.join('、') });
+  const protocols = (v.protocols ?? []).map(cleanLabel).filter(Boolean);
+  if (protocols.length) items.push({ label: '协议', value: protocols.join('、') });
+  if ((v.regions ?? []).length) items.push({ label: '地区', value: v.regions!.join('、') });
+  return items;
+}
+
+const groups = groupByTier
+  ? tiers.map((tier) => ({ tier, rows: rows.filter((row) => row.tier === tier.id) })).filter((g) => g.rows.length > 0 || g.tier.fallen.length > 0)
+  : [{ tier: null, rows }];
+---
+
+{
+  groups.map((group) => (
+    <>
+      {group.tier && (
+        <div class="tier-divider" id={`tier-${group.tier.id}`}>
+          <h2>
+            <span class={`tier-pill tier-pill--${group.tier.id}`}>{group.tier.label}</span>
+            {group.tier.tagline}
+          </h2>
+        </div>
+      )}
+      {group.tier && <p class="muted">{group.tier.rule}</p>}
+      {group.tier && group.tier.fallen.map((f) => (
+        <div class="fallen-card" id="fallen-card">
+          <h3>
+            <s>{f.name}</s>
+            <span class="fallen-chip__flag">{f.status}</span>
+            <span class="source-badge">{f.source} · {f.markedAt.toISOString().slice(0, 10)}</span>
+          </h3>
+          <p>{f.note}</p>
+          <p><a href="/airport-warnings/#fallen">查看拉完了名单与止损方法 →</a></p>
+        </div>
+      ))}
+      {group.rows.length > 0 && (
+      <ol class="rank-list">
+        {group.rows.map((row) => {
+          const tier = tierById.get(row.tier);
+          const data = row.provider.data;
+          return (
+            <li class={`rank-item${row.rank === 1 ? ' rank-item--hang' : ''}`} data-provider={data.slug} data-provider-name={data.name}>
+              <div class="rank-item__no" aria-label={`第 ${row.rank} 名`}>
+                {String(row.rank).padStart(2, '0')}
+              </div>
+              <div class="rank-item__main">
+                <h3 class="rank-item__title">
+                  <a href={`/airports/${data.slug}/`}>{data.name}</a>
+                  {tier && <span class={`tier-pill tier-pill--${tier.id}`}>{tier.label}</span>}
+                  {row.rank === 1 && (
+                    <span class="badge badge--gold">
+                      <span>👑 综合第一名</span>
+                    </span>
+                  )}
+                  {data.status === 'watch' && <span class="source-badge">观察中</span>}
+                </h3>
+                <p class="rank-item__reason">{row.reason}</p>
+                <ul class="rank-item__meta">
+                  {meta(row).map((item) => (
+                    <li>
+                      <b>{item.label}</b>
+                      {item.value}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div class="rank-item__side">
+                <a class="btn btn--small" href={`/airports/${data.slug}/`}>
+                  机场档案
+                </a>
+                {row.rank === 1 && (
+                  <a
+                    class="btn btn--small btn--gold"
+                    href={data.vendor.officialWebsite}
+                    target="_blank"
+                    rel="noopener nofollow sponsored"
+                    data-analytics-event="official_cta_click"
+                    data-provider={data.slug}
+                    data-provider-name={data.name}
+                    data-cta-label="榜单第一名官网入口"
+                  >
+                    打开官网
+                  </a>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+      )}
+    </>
+  ))
+}

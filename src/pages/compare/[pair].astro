@@ -1,0 +1,128 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import FaqBlock from '../../components/FaqBlock.astro';
+import { getBoard } from '../../data/utils/board';
+import { cheapestMonthly, cleanLabel, hasMonthlyPlan } from '../../data/utils/provider-facts';
+import { PAIR_COUNT_TOP, pairSlug, summarizePair } from '../../data/utils/compare';
+
+export async function getStaticPaths() {
+  const board = await getBoard();
+  const top = board.rows.slice(0, PAIR_COUNT_TOP);
+  const paths: { params: { pair: string }; props: { a: string; b: string } }[] = [];
+  for (let i = 0; i < top.length; i++) {
+    for (let j = i + 1; j < top.length; j++) {
+      const a = top[i]!.provider.data.slug;
+      const b = top[j]!.provider.data.slug;
+      paths.push({ params: { pair: pairSlug(a, b) }, props: { a, b } });
+    }
+  }
+  return paths;
+}
+
+interface Props {
+  a: string;
+  b: string;
+}
+
+const { a, b } = Astro.props;
+const board = await getBoard();
+const ra = board.rows.find((r) => r.provider.data.slug === a)!;
+const rb = board.rows.find((r) => r.provider.data.slug === b)!;
+const na = ra.provider.data.name;
+const nb = rb.provider.data.name;
+const summary = summarizePair(ra, rb);
+const tierLabel = new Map(board.tiers.map((t) => [t.id, t.label]));
+
+const cells = (row: typeof ra) => {
+  const v = row.provider.data.vendor;
+  const best = cheapestMonthly(row.provider);
+  return {
+    tier: tierLabel.get(row.tier) ?? '',
+    price: best ? `¥${best.monthly}/月（${best.plan.name}${best.plan.cycle ? `，${best.plan.cycle}` : ''}）` : '资料空白',
+    quota: best?.plan.quota || '资料未注明',
+    monthly: hasMonthlyPlan(row.provider) ? '有按月付费套餐' : '资料未记录',
+    routes: (v.routes ?? []).map(cleanLabel).join('、') || '资料空白',
+    protocols: (v.protocols ?? []).map(cleanLabel).join('、') || '资料空白',
+    regions: (v.regions ?? []).join('、') || '资料空白',
+    clients: (v.clientSupport ?? []).join('、') || '资料空白',
+  };
+};
+const ca = cells(ra);
+const cb = cells(rb);
+const rowsDef: [string, keyof typeof ca][] = [
+  ['夯到拉档位', 'tier'],
+  ['资料里最低月均价', 'price'],
+  ['对应流量', 'quota'],
+  ['月付', 'monthly'],
+  ['线路类型', 'routes'],
+  ['协议', 'protocols'],
+  ['节点地区', 'regions'],
+  ['客户端支持', 'clients'],
+];
+
+const title = `${na}和${nb}哪个好？机场对比：价格、线路与协议差异｜机场牛`;
+const description = `${na}和${nb}机场对比：把两家的最低月均价、月付、线路类型、协议、节点地区和客户端支持并排放在一张表里，说明差异在哪、各适合谁；榜单第 ${ra.rank} 名对第 ${rb.rank} 名，速度与稳定性实时检测中。`;
+
+const faqs = [
+  { q: `${na}和${nb}哪个好？`, a: `没有绝对答案，要看你的需求。${summary.verdictHint}价格、线路、协议和地区的具体差异见上面的对比表，速度和稳定性机场牛没有测试记录，不下结论，建议各买一个月付套餐在自己的网络里试。` },
+  { q: `${na}和${nb}哪个更便宜？`, a: (summary.sentences[0] ?? '').replace(/^价格：/, '') },
+  { q: `${na}和${nb}能用 Clash 吗？`, a: `两家资料里${[na, nb].filter((_, i) => ((i === 0 ? ra : rb).provider.data.vendor.clientSupport ?? []).some((c) => /clash/i.test(c))).join('、') || '都没有'}明确写了支持 Clash；没有写不等于不能用，导入前请确认订阅使用的协议与客户端兼容，并以官网说明为准。` },
+];
+---
+
+<BaseLayout title={title} description={description} keywords={[`${na}和${nb}哪个好`, `${na}机场`, `${nb}机场`, '机场对比']}>
+  <Breadcrumbs
+    items={[
+      { name: '机场对比', href: '/compare/' },
+      { name: `${na} vs ${nb}`, href: `/compare/${pairSlug(a, b)}/` },
+    ]}
+  />
+  <span class="section__eyebrow">VS</span>
+  <h1>{na} 和 {nb} 哪个好：机场对比</h1>
+  <p class="lead">{summary.verdictHint}下面把两家的资料并排放，看差异、再按自己的需求选。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>对比项</th>
+          <th><a href={`/airports/${a}/`} style="color:inherit">{na}</a></th>
+          <th><a href={`/airports/${b}/`} style="color:inherit">{nb}</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        {rowsDef.map(([label, key]) => (
+          <tr>
+            <td><b>{label}</b></td>
+            <td>{ca[key]}</td>
+            <td>{cb[key]}</td>
+          </tr>
+        ))}
+        <tr>
+          <td><b>晚高峰稳定性</b></td>
+          <td><span class="source-badge">实时检测中</span></td>
+          <td><span class="source-badge">实时检测中</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>差异在哪</h2>
+  <ul>
+    {summary.sentences.map((s) => <li>{s}</li>)}
+  </ul>
+
+  <h2>怎么选</h2>
+  <p>
+    如果你最在意价格，先看月均价和是否有月付套餐，再对一下流量够不够；如果你要稳定的低延迟线路，看线路类型和节点地区；如果你要用 Clash、小火箭或 v2rayN，先确认客户端支持和协议是否对得上。两家资料里空着的格子，到官网确认比猜更靠谱。
+  </p>
+  <div class="callout">
+    <p>
+      想看完整的机场对比表，去<a href="/compare/">机场对比总表</a>；想看每家的理由和来源，进入
+      <a href={`/airports/${a}/`}>{na}档案</a>和<a href={`/airports/${b}/`}>{nb}档案</a>；价格比较见<a href="/rankings/cheap/">便宜机场推荐</a>。
+    </p>
+  </div>
+
+  <FaqBlock heading={`${na}和${nb}对比常见问题`} items={faqs} />
+</BaseLayout>

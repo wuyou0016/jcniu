@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { isDemoEntry } from '../../data/utils/demo-filter';
+import { SEO_TAGS, getArticlesForTag, getFaqForTag } from '../../data/seo/seo-tags';
+import { SEO_COPY } from '../../data/seo/site-copy';
+
+const copy = SEO_COPY.tagIndex;
+
+const articles = await getCollection('articles', ({ id }) => !isDemoEntry(id));
+
+const tags = SEO_TAGS.map((tag) => ({
+  tag,
+  articleCount: getArticlesForTag(tag, articles).length,
+  faqCount: getFaqForTag(tag).length,
+})).filter((entry) => entry.articleCount + entry.faqCount >= 2);
+---
+
+<BaseLayout title={copy.title} description={copy.description} keywords={copy.keywords}>
+  <Breadcrumbs items={[{ name: copy.breadcrumb, href: '/tag/' }]} />
+
+  <h1>{copy.h1}</h1>
+  <p>{copy.intro}</p>
+
+  <div class="entry-grid">
+    {
+      tags.map(({ tag, articleCount, faqCount }) => (
+        <a class="entry-card" href={`/tag/${tag.slug}/`}>
+          <span class="entry-card__title">{tag.name}</span>
+          <p class="entry-card__description">{tag.blurb}</p>
+          <span class="entry-card__cta">{copy.cardCta(articleCount, faqCount)}</span>
+        </a>
+      ))
+    }
+  </div>
+
+  <p>{copy.outro}</p>
+  <ul class="quick-links">
+    <li><a href="/faq/">{SEO_COPY.faqLinkLabel}</a></li>
+    <li><a href="/knowledge/">{SEO_COPY.faqPage.moreLinks.knowledge}</a></li>
+    <li><a href="/rankings/">{SEO_COPY.faqPage.moreLinks.rankings}</a></li>
+  </ul>
+</BaseLayout>

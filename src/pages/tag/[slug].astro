@@ -1,0 +1,138 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import FaqBlock from '../../components/FaqBlock.astro';
+import { isDemoEntry } from '../../data/utils/demo-filter';
+import { getPublishableProviders } from '../../data/utils/provider-publish-gate';
+import { getArticleHref } from '../../data/utils/article-routing';
+import { resolveCanonicalUrl } from '../../config/seo';
+import {
+  SEO_TAGS,
+  getArticlesForTag,
+  getFaqForTag,
+  providerMatchesTag,
+  tagHasProviderSupport,
+  type SeoTag,
+} from '../../data/seo/seo-tags';
+import { SEO_COPY } from '../../data/seo/site-copy';
+
+export async function getStaticPaths() {
+  const articles = await getCollection('articles', ({ id }) => !isDemoEntry(id));
+  // 内容太薄的标签不生成页面：相关文章 + 相关问答合计至少 2 条才有独立落地的价值。
+  return SEO_TAGS.filter((tag) => getArticlesForTag(tag, articles).length + getFaqForTag(tag).length >= 2).map((tag) => ({
+    params: { slug: tag.slug },
+    props: { tag },
+  }));
+}
+
+interface Props {
+  tag: SeoTag;
+}
+
+const { tag } = Astro.props;
+
+const articles = await getCollection('articles', ({ id }) => !isDemoEntry(id));
+const tagArticles = getArticlesForTag(tag, articles);
+const tagFaq = getFaqForTag(tag);
+
+const providers = tagHasProviderSupport(tag) ? (await getPublishableProviders()).filter((provider) => providerMatchesTag(provider, tag)) : [];
+
+const copy = SEO_COPY.tagPage;
+const title = copy.title(tag.name);
+const description = copy.description(tag.name, tag.intro);
+const canonicalUrl = resolveCanonicalUrl(`/tag/${tag.slug}/`);
+
+const collectionJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: title,
+  description,
+  url: canonicalUrl,
+};
+
+// 只链接真正生成了页面的标签，避免出现死链。
+const otherTags = SEO_TAGS.filter(
+  (other) => other.slug !== tag.slug && getArticlesForTag(other, articles).length + getFaqForTag(other).length >= 2,
+).slice(0, 10);
+---
+
+<BaseLayout title={title} description={description} keywords={[tag.name, '机场推荐', '机场']}>
+  <Breadcrumbs
+    items={[
+      { name: SEO_COPY.tagIndex.breadcrumb, href: '/tag/' },
+      { name: tag.name, href: `/tag/${tag.slug}/` },
+    ]}
+  />
+
+  <h1>{copy.h1(tag.name)}</h1>
+  <p>{tag.intro}</p>
+  {tag.angle && <p>{tag.angle}</p>}
+
+  {
+    tagArticles.length > 0 && (
+      <>
+        <h2>{copy.articlesHeading(tag.name)}</h2>
+        <ul class="quick-links">
+          {tagArticles.map((article) => (
+            <li>
+              <a href={getArticleHref(article)}>{article.data.title}</a>
+              <span class="tag-article-desc"> —— {article.data.description}</span>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  <FaqBlock heading={copy.faqHeading(tag.name)} items={tagFaq} />
+
+  {
+    providers.length > 0 && (
+      <>
+        <h2>{copy.providerHeading(tag.name)}</h2>
+        <p>{copy.providerIntro(tag.name)}</p>
+        <ul class="quick-links">
+          {providers.map((provider) => (
+            <li>
+              <a href={`/airports/${provider.data.slug}/`}>{provider.data.name}</a>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  <h2>{copy.moreHeading}</h2>
+  <ul class="quick-links">
+    {
+      tag.links.map((link) => (
+        <li>
+          <a href={link.href}>{link.label}</a>
+        </li>
+      ))
+    }
+    <li><a href="/faq/">{SEO_COPY.faqLinkLabel}</a></li>
+    <li><a href="/tag/">{SEO_COPY.tagLinkLabel}</a></li>
+  </ul>
+
+  <h3>{copy.otherHeading}</h3>
+  <ul class="quick-links">
+    {
+      otherTags.map((other) => (
+        <li>
+          <a href={`/tag/${other.slug}/`}>{other.name}</a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <script type="application/ld+json" set:html={JSON.stringify(collectionJsonLd)} />
+</BaseLayout>
+
+<style>
+  .tag-article-desc {
+    color: var(--color-muted);
+    font-size: 0.875rem;
+  }
+</style>

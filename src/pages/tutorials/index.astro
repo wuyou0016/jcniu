@@ -1,0 +1,23 @@
+---
+import ArticleHub from '../../components/ArticleHub.astro';
+---
+
+<ArticleHub
+  type="tutorial"
+  title="机场使用教程：订阅导入、Clash 配置、小火箭与 v2rayN 设置｜机场牛"
+  description="机场使用教程：订阅链接怎么导入 Clash、小火箭、v2rayN，分流规则、TUN 模式、DNS 和订阅更新怎么设置，按步骤走一遍就能用。"
+  h1="机场使用教程：一步一步照着做"
+  breadcrumb="使用教程"
+  href="/tutorials/"
+  keywords={['机场教程','订阅导入','Clash配置','小火箭教程','v2rayN教程']}
+  eyebrow="TUTORIALS">
+  <Fragment slot="intro">
+    <h2>从买到用：一条完整的上手流程</h2>
+    <ol class="steps">
+      <li><b>选客户端</b>先按设备选。<a href="/tools/client-picker/">客户端选择器</a></li>
+      <li><b>导入订阅</b>复制订阅链接导入，更新节点。<a href="/tutorials/clash-verge-daoru-dingyue/">Clash Verge 导入订阅</a></li>
+      <li><b>设置分流</b>规则模式让国内直连、国外走代理。<a href="/tutorials/mihomo-fenliu-guize/">分流规则入门</a></li>
+      <li><b>遇到问题</b>先本地、后订阅、再节点。<a href="/troubleshooting/">故障排查</a></li>
+    </ol>
+  </Fragment>
+</ArticleHub>

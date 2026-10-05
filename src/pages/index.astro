@@ -1,0 +1,390 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TierBoard from '../components/TierBoard.astro';
+import FaqBlock from '../components/FaqBlock.astro';
+import Icon from '../components/Icon.astro';
+import { siteConfig } from '../config/site';
+import { resolveCanonicalUrl } from '../config/seo';
+import { isDemoEntry } from '../data/utils/demo-filter';
+import { getBoard } from '../data/utils/board';
+import { getArticleHref, articleTypeLabel } from '../data/utils/article-routing';
+import { cheapestMonthly, cleanLabel, planFacts } from '../data/utils/provider-facts';
+
+const [board, articles, glossary] = await Promise.all([
+  getBoard(),
+  getCollection('articles', ({ id }) => !isDemoEntry(id)),
+  getCollection('glossary', ({ id }) => !isDemoEntry(id)),
+]);
+
+const first = board.rows[0]!;
+const firstData = first.provider.data;
+const firstPlans = planFacts(first.provider);
+const firstRoutes = (firstData.vendor.routes ?? []).map(cleanLabel).join('、');
+const firstProtocols = (firstData.vendor.protocols ?? []).map(cleanLabel).join('、');
+const firstClients = (firstData.vendor.clientSupport ?? []).join('、');
+const firstRegions = (firstData.vendor.regions ?? []).join('、');
+const tierCount = board.tiers.length;
+const tierLabel = new Map(board.tiers.map((t) => [t.id, t.label]));
+const top7 = board.rows.slice(0, 7);
+
+const latest = [...articles].sort((a, b) => b.data.updatedAt.getTime() - a.data.updatedAt.getTime()).slice(0, 6);
+const termPicks = ['iplc', 'iepl', 'vless', 'hysteria2', 'traffic-multiplier', 'native-ip']
+  .map((id) => glossary.find((g) => g.id === id))
+  .filter((g): g is NonNullable<typeof g> => Boolean(g));
+
+const intents = [
+  { icon: 'price', kicker: 'CHEAP', title: '便宜机场推荐', text: '按资料里能读出的月均价从低到高排，顺便看看低价背后常见的取舍。', href: '/rankings/cheap/' },
+  { icon: 'route', kicker: 'DEDICATED', title: '专线机场推荐', text: 'IPLC、IEPL 专线品牌一页看完，附专线和中转到底差在哪。', href: '/rankings/dedicated-line/' },
+  { icon: 'calendar', kicker: 'MONTHLY', title: '月付机场推荐', text: '先买一个月试水，试错成本最低，资料里有月付套餐的品牌都在这。', href: '/rankings/monthly/' },
+  { icon: 'shield', kicker: 'STABLE', title: '稳定机场怎么判断', text: '晚高峰丢包、线路类型、运营时长，稳定要拆开看，不看“从不掉线”。', href: '/rankings/stable/' },
+  { icon: 'terminal', kicker: 'CLASH', title: 'Clash 机场推荐', text: 'Clash Verge、Mihomo 怎么选，哪些品牌资料里写明了支持。', href: '/guides/clash-jichang-tuijian/' },
+  { icon: 'spark', kicker: 'AI', title: 'ChatGPT 机场推荐', text: '对出口地区有限制的 AI 工具，该看节点地区和 IP 类型，而不是品牌名。', href: '/guides/chatgpt-jichang-tuijian/' },
+  { icon: 'ticket', kicker: 'COUPON', title: '机场优惠码', text: '资料里记载过的优惠码，注明出处，也标出自相矛盾的那几条。', href: '/coupons/' },
+  { icon: 'alert', kicker: 'WARNING', title: '机场跑路预警', text: '跑路前的可观察信号清单、拉完了名单，以及已经付了年费怎么止损。', href: '/airport-warnings/' },
+  { icon: 'scale', kicker: 'COMPARE', title: '机场对比总表', text: '价格、线路、协议、地区、客户端并排放，还有前几名两两对比。', href: '/compare/' },
+  { icon: 'gift', kicker: 'FREE', title: '免费机场靠谱吗', text: '免费节点和付费机场差在哪，哪些坑是免费的代价。', href: '/free-airport/' },
+  { icon: 'device', kicker: 'CLIENT', title: '机场客户端大全', text: 'Windows、Mac、安卓、iOS、鸿蒙各用什么客户端，下载渠道怎么认。', href: '/clients/' },
+  { icon: 'wrench', kicker: 'TOOLS', title: '机场在线工具', text: '价格换算器、客户端选择器、买前自检清单，浏览器里直接用。', href: '/tools/' },
+];
+
+const scenes = [
+  { icon: 'book', title: '第一次买机场', text: '先分清机场、客户端、节点三件事，再选月付小套餐试一个月，别一上来就年付。', href: '/guides/xinshou-jichang-tuijian/', label: '新手机场推荐' },
+  { icon: 'calendar', title: '学生党预算有限', text: '月付优先、流量够用即可、不为专线多花钱，把预算花在“先试”上。', href: '/guides/xueshengdang-jichang/', label: '学生党机场' },
+  { icon: 'spark', title: '用 ChatGPT / Claude / Cursor', text: '这类服务看出口地区和 IP 类型，选节点比选品牌重要，先看地区再看线路。', href: '/guides/claude-ai-gongju-jichang/', label: 'AI 开发环境网络' },
+  { icon: 'globe', title: '追剧、看流媒体', text: '解锁是动态结果，今天能看明天未必；学会自己验证比相信“全解锁”靠谱。', href: '/guides/liumeiti-jiesuo-jichang/', label: '流媒体解锁机场' },
+  { icon: 'chip', title: '换客户端 / 换设备', text: 'Windows、Mac、安卓、iOS、鸿蒙各一篇，下载只走官方渠道，导入订阅一步到位。', href: '/clients/', label: '客户端与平台' },
+  { icon: 'alert', title: '已经付了钱怕跑路', text: '先看预警信号，再保存证据、停止追加付款、准备迁移，别被“追回”骗二次。', href: '/warnings/paolu-hou-zenme-zhisun/', label: '机场跑路了怎么办' },
+];
+
+const faqs = [
+  {
+    q: '机场牛的“夯到拉”是按什么排的？',
+    a: `按资料透明度分${tierCount}档：夯是价格、线路、协议、节点地区、客户端五项资料都能在官网核对；顶级是价格有多源印证或站长确认且线路明确；人上人是价格线路有记录但来源偏单一；NPC 是价格或线路至少公开一项；路人是价格线路都查不到可核实资料；拉完了是站长标注已跑路的名单。前七名顺序为编辑指定，第八名起按资料完整度排列。`,
+  },
+  {
+    q: '被排在“路人”档，是不是说明这个机场不能用？',
+    a: '不是。路人档只说明目前查不到可核实的价格和线路资料，说的是资料透明度，不是服务质量。机场牛没有这些品牌的测速和稳定性记录，既不能说它好，也不能说它差，资料补齐后随时可以升档。',
+  },
+  {
+    q: '“拉完了”名单是什么，奈云为什么在里面？',
+    a: '拉完了是已跑路服务商的名单，只收有明确标注的。奈云由站长标注为已跑路，来源注明为站长标注，机场牛没有公开的时间线和证据细节，只记录结论和标注日期。传闻和来源不明的截图不会进名单。',
+  },
+  {
+    q: '榜单里的速度、稳定性和流媒体解锁怎么没有数字？',
+    a: '因为目前没有机场牛自己的测试记录，也不采信来源方自己标注为模拟示例的测速图。晚高峰稳定性这类指标需要连续多天、固定条件的测试，积累够了才会展示，在那之前统一标注为“实时检测中”，不会拿宣传语或截图凑数字。',
+  },
+  {
+    q: '第一名无忧链接是怎么选出来的？',
+    a: '无忧链接是夯档里目前唯一满足“五项资料都在官网”的品牌：三档套餐价格流量、协议、线路、节点地区和客户端支持都能直接核对，不需要注册。榜单第一名同时沿用热门榜单口径，价格以官网结算页为准。',
+  },
+];
+
+const itemListJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: '机场牛机场推荐排行榜（夯到拉）',
+  itemListElement: board.rows.map((row) => ({
+    '@type': 'ListItem',
+    position: row.rank,
+    name: row.provider.data.name,
+    url: resolveCanonicalUrl(`/airports/${row.provider.data.slug}/`),
+  })),
+};
+const hangChecks = [
+  { label: '价格公开', value: firstPlans.map((p) => `${p.name} ${p.price}`).join(' / ') },
+  { label: '线路写明', value: firstRoutes },
+  { label: '协议具体', value: firstProtocols },
+  { label: '地区列出', value: firstRegions },
+  { label: '客户端明确', value: firstClients },
+];
+---
+
+<BaseLayout
+  title={siteConfig.defaultTitle}
+  description={siteConfig.defaultDescription}
+  keywords={['机场推荐', '机场排行榜', '便宜机场', '专线机场', '稳定机场', '梯子工具', 'Clash机场推荐', '机场优惠码', '机场跑路预警']}
+>
+  <section class="hero">
+    <div class="hero__grid">
+      <div>
+        <span class="hero__eyebrow">🐂 2026 机场推荐排行榜 · TIER LIST</span>
+        <h1>机场推荐，<mark>从夯到拉</mark><br />一页排明白</h1>
+        <p class="hero__subtitle">
+          机场牛把 {board.rows.length} 家机场和梯子服务商，按“价格、线路、协议、来源”这些查得到的资料分成夯、顶级、人上人、NPC、路人五档，另设“拉完了”名单。便宜机场、专线机场、稳定机场、Clash 机场、优惠码和跑路预警，每个问题都有专门页面，没有来源的数据一个不写。
+        </p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary btn--large" href="#board">看夯到拉排行榜</a>
+          <a class="btn btn--large" href="/about/">这张榜怎么评的</a>
+        </div>
+        <p class="hero__fine">晚高峰稳定性、流媒体与 ChatGPT 可用性：机场牛检测中，没有测试记录之前不写数字。</p>
+      </div>
+
+      <aside class="featured corner-brackets" data-provider={firstData.slug} data-provider-name={firstData.name}>
+        <div class="featured__tier">
+          <span class="tier-pill tier-pill--hang">夯</span>
+          <span class="badge badge--gold"><span>👑 综合第一名</span></span>
+        </div>
+        <h2>{firstData.name}</h2>
+        <p class="featured__price">
+          {firstPlans[0]?.name}档 {firstPlans[0]?.price}（{firstPlans[0]?.cycle}）· {firstPlans[0]?.quota}
+        </p>
+        <ul class="featured__facts">
+          <li><b>其他档位</b><span>{firstPlans.slice(1).map((p) => `${p.name} ${p.price}·${p.quota}`).join('；')}</span></li>
+          <li><b>线路</b><span>{firstRoutes}</span></li>
+          <li><b>协议</b><span>{firstProtocols}</span></li>
+          <li><b>地区</b><span>{firstRegions}</span></li>
+          <li><b>客户端</b><span>{firstClients}</span></li>
+        </ul>
+        <div class="featured__actions">
+          <a
+            class="btn btn--gold"
+            href={firstData.vendor.officialWebsite}
+            target="_blank"
+            rel="noopener nofollow sponsored"
+            data-analytics-event="official_cta_click"
+            data-provider={firstData.slug}
+            data-provider-name={firstData.name}
+            data-cta-label="首页夯档官网入口"
+          >打开{firstData.name}官网</a>
+          <a class="btn" href={`/airports/${firstData.slug}/`}>看机场档案</a>
+        </div>
+        <p class="hero__fine">价格以官网结算页为准；MINI 档按年付费，折合每月 ¥6.6。</p>
+      </aside>
+    </div>
+
+    <div class="stat-strip" aria-label="站点概览">
+      <div class="stat-strip__item"><span class="stat-strip__number">{board.rows.length}</span><span class="stat-strip__label">家机场已收录</span></div>
+      <div class="stat-strip__item"><span class="stat-strip__number">{tierCount}</span><span class="stat-strip__label">档：夯到拉完了</span></div>
+      <div class="stat-strip__item"><span class="stat-strip__number">{articles.length}</span><span class="stat-strip__label">篇选购与教程</span></div>
+      <div class="stat-strip__item"><span class="stat-strip__number">{glossary.length}</span><span class="stat-strip__label">条术语解释</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="board">
+    <div class="section__head">
+      <div>
+        <span class="section__eyebrow">TIER LIST</span>
+        <h2>机场推荐排行榜：夯到拉一次看完</h2>
+      </div>
+      <a class="section__more" href="/rankings/">看完整榜单和每家理由 →</a>
+    </div>
+    <p class="lead">
+      档位只回答一个问题：这家机场的价格、线路和来源，你能不能在不被忽悠的前提下核对出来？点任意一家进入它的档案，里面每条信息都标了来源。
+    </p>
+    <TierBoard tiers={board.tiers} />
+    <p class="muted" style="margin-top:0.9rem">
+      路人档说的是资料透明度，不是服务质量；“拉完了”名单只收有明确标注的，传闻一概不收。
+    </p>
+  </section>
+
+  <section class="section">
+    <div class="section__head">
+      <div>
+        <span class="section__eyebrow">WHY HANG</span>
+        <h2>为什么{firstData.name}是夯档唯一</h2>
+      </div>
+      <a class="section__more" href={`/airports/${firstData.slug}/`}>看{firstData.name}完整档案 →</a>
+    </div>
+    <p>夯的门槛很高：价格、线路、协议、节点地区、客户端支持五项，必须全部在官网上直接核对得到，不注册、不问客服。下面是{firstData.name}目前对应的五项资料，每一项都能在档案页看到来源。</p>
+    <div class="why-hang">
+      {hangChecks.map((c) => (
+        <div class="why-hang__item"><b><Icon name="check" size={18} />{c.label}</b>{c.value}</div>
+      ))}
+    </div>
+    <p class="muted">夯档不代表速度最快或最稳定，那两项机场牛检测中；价格以官网结算页为准。</p>
+  </section>
+
+  <section class="section">
+    <div class="section__head">
+      <div>
+        <span class="section__eyebrow">TOP 7</span>
+        <h2>前七名速览：价格、线路、协议一张表</h2>
+      </div>
+      <a class="section__more" href="/compare/">看 28 家对比总表 →</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th class="num">名次</th><th>品牌</th><th>档位</th><th>资料里最低月均价</th><th>线路</th><th>协议</th><th>节点地区</th></tr>
+        </thead>
+        <tbody>
+          {top7.map((row) => {
+            const v = row.provider.data.vendor;
+            const best = cheapestMonthly(row.provider);
+            return (
+              <tr>
+                <td class="num">{row.rank}</td>
+                <td><a href={`/airports/${row.provider.data.slug}/`}>{row.provider.data.name}</a></td>
+                <td><span class={`tier-pill tier-pill--${row.tier}`}>{tierLabel.get(row.tier)}</span></td>
+                <td class="num">{best ? `¥${best.monthly}/月` : '资料空白'}</td>
+                <td>{(v.routes ?? []).map(cleanLabel).join('、') || '资料空白'}</td>
+                <td>{(v.protocols ?? []).map(cleanLabel).join('、') || '资料空白'}</td>
+                <td>{(v.regions ?? []).join('、') || '资料空白'}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">前七名顺序为编辑指定，沿用热门榜单口径；月均价为资料里套餐文案折算值，不是实际付款周期。</p>
+  </section>
+
+  <section class="section">
+    <div class="section__head">
+      <div>
+        <span class="section__eyebrow">FIND</span>
+        <h2>你想找哪一种机场？</h2>
+      </div>
+    </div>
+    <div class="entry-grid">
+      {
+        intents.map((item) => (
+          <a class="entry-card entry-card--icon" href={item.href}>
+            <span class="entry-card__icon"><Icon name={item.icon} size={20} /></span>
+            <span class="entry-card__kicker">{item.kicker}</span>
+            <span class="entry-card__title">{item.title}</span>
+            <p class="entry-card__description">{item.text}</p>
+            <span class="entry-card__cta">进去看看 →</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section__head">
+      <div>
+        <span class="section__eyebrow">SCENES</span>
+        <h2>按你的场景直接找答案</h2>
+      </div>
+    </div>
+    <div class="scene-grid">
+      {scenes.map((s) => (
+        <div class="scene">
+          <h3><Icon name={s.icon} size={20} />{s.title}</h3>
+          <p>{s.text}</p>
+          <a href={s.href}>{s.label} →</a>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section__head">
+      <div>
+        <span class="section__eyebrow">FREE VS PAID</span>
+        <h2>免费节点和付费机场，差在哪？</h2>
+      </div>
+      <a class="section__more" href="/free-airport/">看完整对比 →</a>
+    </div>
+    <div class="vs-grid">
+      <div class="vs-card vs-card--free">
+        <h3>免费节点常见的短板</h3>
+        <ul>
+          <li>节点来源不明，流量走谁的服务器无从核实，隐私风险自担</li>
+          <li>晚高峰人多拥挤，节点说没就没，没有人负责维护</li>
+          <li>出口 IP 被大量人共用，访问 AI 工具和流媒体时更容易被拦截</li>
+          <li>出了问题没有客服，也没有退款可言</li>
+        </ul>
+      </div>
+      <div class="vs-card vs-card--paid">
+        <h3>付费机场多出来的东西</h3>
+        <ul>
+          <li>有明确的运营主体和套餐条款，价格流量能提前看清</li>
+          <li>订阅可更新、节点有人维护，出问题至少有地方反馈</li>
+          <li>线路类型（专线或中转）、协议、节点地区有说明，能先查再买</li>
+          <li>月付可以先试，不合适下个月就换，成本可控</li>
+        </ul>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:0.9rem">以上是行业里的普遍情况，不针对任何具体免费服务。付费不等于一定好，所以才需要先看资料再下单。</p>
+  </section>
+
+  <section class="section">
+    <div class="section__head">
+      <div>
+        <span class="section__eyebrow">HOW TO</span>
+        <h2>机场怎么选？四步走完</h2>
+      </div>
+      <a class="section__more" href="/guides/jichang-zenme-xuan/">机场怎么选全文 →</a>
+    </div>
+    <ol class="steps">
+      <li><b>先定预算和周期</b>第一次买选月付，先试一个月；想年付，先确认能不能退款。<a href="/rankings/monthly/">看月付机场</a></li>
+      <li><b>再看线路和协议</b>要稳看专线（IPLC/IEPL），只刷网页中转也够用；协议要和你的客户端对得上。<a href="/rankings/dedicated-line/">看专线机场</a></li>
+      <li><b>对一下客户端</b>iPhone 用小火箭，Windows 用 Clash Verge 或 v2rayN，别买了订阅才发现客户端读不了。<a href="/clients/">看客户端</a></li>
+      <li><b>下单前过一遍清单</b>价格来源、优惠码真假、有没有跑路信号，三分钟自检。<a href="/tools/airport-checklist/">打开自检清单</a></li>
+    </ol>
+  </section>
+
+  <section class="section">
+    <div class="section__head">
+      <div>
+        <span class="section__eyebrow">RULES</span>
+        <h2>夯到拉怎么评：五个能核对的问题</h2>
+      </div>
+      <a class="section__more" href="/about/">完整规则 →</a>
+    </div>
+    <ul class="criteria">
+      <li><span class="criteria__no">01</span><b>价格公开吗</b>套餐、流量、计费周期能不能在官网直接看到，不注册、不问客服。</li>
+      <li><span class="criteria__no">02</span><b>线路说清了吗</b>专线还是中转，IPLC、IEPL 还是别的，有没有明确写出。</li>
+      <li><span class="criteria__no">03</span><b>协议和客户端呢</b>协议、支持的客户端是否具体，而不是笼统的“支持主流客户端”。</li>
+      <li><span class="criteria__no">04</span><b>来源能追溯吗</b>每条信息是官方、第三方还是编辑观点，有没有链接和日期。</li>
+      <li><span class="criteria__no">05</span><b>有没有多源印证</b>同一个价格是不是被两个独立来源对上，孤证会明确降一档。</li>
+    </ul>
+  </section>
+
+  {termPicks.length > 0 && (
+    <section class="section">
+      <div class="section__head">
+        <div>
+          <span class="section__eyebrow">GLOSSARY</span>
+          <h2>看不懂的词，这里一句话讲清</h2>
+        </div>
+        <a class="section__more" href="/glossary/">全部术语 →</a>
+      </div>
+      <div class="entry-grid">
+        {termPicks.map((term) => (
+          <a class="entry-card" href={`/glossary/${term.id}/`}>
+            <span class="entry-card__title">{term.data.term}</span>
+            <p class="entry-card__description">{term.data.definition}</p>
+            <span class="entry-card__cta">展开解释 →</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="section">
+    <div class="section__head">
+      <div>
+        <span class="section__eyebrow">LATEST</span>
+        <h2>最近更新</h2>
+      </div>
+      <a class="section__more" href="/guides/">全部选购指南 →</a>
+    </div>
+    <div class="entry-grid">
+      {
+        latest.map((article) => (
+          <a class="entry-card" href={getArticleHref(article)}>
+            <span class="entry-card__kicker">{articleTypeLabel[article.data.type]}</span>
+            <span class="entry-card__title">{article.data.title}</span>
+            <p class="entry-card__description">{article.data.description}</p>
+            <span class="entry-card__cta">更新于 {article.data.updatedAt.toISOString().slice(0, 10)} →</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <FaqBlock heading="关于机场牛的常见问题" items={faqs} />
+
+  <section class="callout callout--warn">
+    <h3>下单前请再核对一遍</h3>
+    <p>
+      所有价格、线路、优惠信息均整理自官网或第三方资料，会随商家调整而变化，请以各品牌官网结算页为准。请遵守所在地法律法规，本站不提供法律意见。
+    </p>
+  </section>
+
+  <script type="application/ld+json" set:html={JSON.stringify(itemListJsonLd)} />
+</BaseLayout>

@@ -1,0 +1,110 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import FaqBlock from '../../components/FaqBlock.astro';
+import { getBoard } from '../../data/utils/board';
+import { getArticleHref } from '../../data/utils/article-routing';
+import { isDemoEntry } from '../../data/utils/demo-filter';
+
+const [board, articles] = await Promise.all([
+  getBoard(),
+  getCollection('articles', ({ id, data }) => !isDemoEntry(id) && data.type === 'warning'),
+]);
+const watch = board.rows.filter((row) => row.provider.data.status === 'watch');
+const fallen = board.fallen;
+
+const faqs = [
+  { q: '机场跑路有哪些预警信号？', a: '常见信号有：客服长时间不回复、官网频繁更换域名或打不开、突然推出力度异常的年付或长期套餐、节点大面积失效却没有公告、订阅更新失败持续多天、退款一律拒绝。单个信号不能下结论，多个信号叠加时要提高警惕，尽快评估损失。' },
+  { q: '机场牛有没有机场跑路名单？', a: '有一份“拉完了”名单，目前只有站长标注已跑路的奈云一家，来源注明为站长标注，机场牛没有公开的时间线和证据细节，只记录结论和标注日期。传闻、来源不明的截图不会进名单；“观察名单”只记录资料有争议或缺口的品牌，观察中不等于跑路。' },
+  { q: '已经付了年费，机场疑似跑路怎么办？', a: '先保存订单、聊天和公告截图，确认支付渠道能否申请退款或争议；尽快导出还在用的订阅信息并评估替代方案；不要继续续费或补缴。损失已经发生时，重点是及时止损和保留证据，具体能否追回取决于支付渠道。' },
+  { q: '怎么降低被跑路的风险？', a: '第一次先买月付；年付前确认退款政策和运营时长；优先选择价格线路资料公开、能被多个来源印证的品牌；不要一次预付多年；用虚拟或限额的支付方式。这些措施不能杜绝风险，但能把单次损失控制在可接受的范围。' },
+];
+---
+
+<BaseLayout
+  title="机场跑路预警 2026｜跑路预警信号清单与止损方法（持续更新）｜机场牛"
+  description="机场跑路预警：整理机场跑路前常见的可观察信号、年付风险和止损方法，公布机场牛的收录原则——没有可核实证据不点名；另列出资料存在争议的观察名单，观察中不等于跑路，下单前先看清再付费。"
+  keywords={['机场跑路', '机场跑路预警', '避坑指南', '机场安全', '机场评测方法']}
+>
+  <Breadcrumbs items={[{ name: '机场跑路预警', href: '/airport-warnings/' }]} />
+  <span class="section__eyebrow">WARNINGS · 持续更新</span>
+  <h1>机场跑路预警：先看信号，再决定付多久</h1>
+  <p class="lead">
+    机场行业长期存在“收了年费就消失”的风险。机场牛的做法是：公布可观察的预警信号，教你降低损失；<b>“拉完了”名单只收有明确标注的，传闻一概不收</b>。目前名单里有一家，来源注明为站长标注。
+  </p>
+
+  <h2 id="fallen">拉完了名单：站长标注已跑路</h2>
+  {
+    fallen.map((f) => (
+      <div class="fallen-card">
+        <h3>
+          <s>{f.name}</s>
+          <span class="fallen-chip__flag">{f.status}</span>
+          <span class="source-badge">{f.source} · 标注于 {f.markedAt.toISOString().slice(0, 10)}</span>
+        </h3>
+        <p>{f.note}</p>
+      </div>
+    ))
+  }
+  <div class="callout callout--danger">
+    <h3>我们不收录什么</h3>
+    <p>只有传闻、截图来源不明、当事人说法互相矛盾的“跑路”消息，机场牛一律不写。名单里的每一条都注明来源（站长标注或可核查的证据）和标注日期；如果你认为某条记录有误，或有可核查的材料，请通过页脚的“入驻申请”联系，核实后更正。</p>
+  </div>
+
+  <h2>跑路前常见的 7 个预警信号</h2>
+  <ol>
+    <li><b>客服变慢或消失</b>：工单、群里长期没人回，问退款、问故障都已读不回。</li>
+    <li><b>官网或域名频繁变动</b>：主站打不开，只留一个备用域名，公告也没有。</li>
+    <li><b>突然猛推长期套餐</b>：力度异常的年付、三年付、买断，同时限时倒计时催你一次付清。</li>
+    <li><b>节点成批失效</b>：多个地区节点同时不可用，持续数天没有公告和补偿。</li>
+    <li><b>订阅更新失败</b>：订阅链接长期不可用或内容为空，官方只让你“耐心等待”。</li>
+    <li><b>退款政策突然收紧</b>：原来可以退款的条款被悄悄删掉，或者所有退款申请一律驳回。</li>
+    <li><b>社区口碑集中转向</b>：多个互相独立的用户在同一时间段反馈同样的问题。</li>
+  </ol>
+  <p>单个信号不能下结论，机场也会有正常的维护和故障。多个信号叠加时，再考虑止损。详细的判断方法见下面的文章。</p>
+
+  <h2>已经付了钱，怎么降低损失</h2>
+  <ul>
+    <li>保存订单号、付款截图、客服聊天和公告，之后无论走退款还是争议都用得上。</li>
+    <li>确认支付渠道是否支持申请退款或争议，越早申请越好。</li>
+    <li>不要因为“补偿”“升级”再追加付款，先评估替代方案。</li>
+    <li>把还能用的订阅导出备份，准备好切换到新的机场。</li>
+  </ul>
+
+  <h2>资料争议观察名单（不是跑路名单）</h2>
+  <p>
+    下面这些品牌在资料里的状态是“观察中”，原因是价格、线路或品牌归属的资料存在争议或缺口，机场牛暂时不替它们下结论。<b>观察中不等于跑路，也不等于不能用</b>。
+  </p>
+  {
+    watch.length > 0 ? (
+      <ul>
+        {watch.map((row) => (
+          <li>
+            <a href={`/airports/${row.provider.data.slug}/`}>{row.provider.data.name}</a>：{row.reason}
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>目前没有处于观察状态的品牌。</p>
+    )
+  }
+
+  <h2>延伸阅读：避坑文章</h2>
+  {
+    articles.length > 0 ? (
+      <ul class="quick-links">
+        {articles.map((article) => <li><a href={getArticleHref(article)}>{article.data.title}</a></li>)}
+      </ul>
+    ) : (
+      <p>避坑文章陆续上线中。</p>
+    )
+  }
+  <ul class="quick-links">
+    <li><a href="/warnings/">全部避坑指南</a></li>
+    <li><a href="/rankings/">机场推荐排行榜</a></li>
+    <li><a href="/tools/airport-checklist/">买前自检清单</a></li>
+  </ul>
+
+  <FaqBlock heading="机场跑路预警常见问题" items={faqs} />
+</BaseLayout>

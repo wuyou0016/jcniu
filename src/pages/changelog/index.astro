@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { getBoard } from '../../data/utils/board';
+
+const board = await getBoard();
+const snapshot = board.snapshotAt.toISOString().slice(0, 10);
+// 更新记录只写真实发生的事：站点上线与榜单快照日期，不编造"每周更新"。
+const entries = [
+  { date: snapshot, title: '机场牛上线，夯到拉榜首次发布', text: `收录 ${board.rows.length} 家机场，按资料透明度分为夯、顶级、人上人、NPC、拉五档；同步上线专项榜单、机场对比、优惠码、跑路预警、客户端与教程栏目。` },
+];
+---
+
+<BaseLayout
+  title="更新记录｜机场牛榜单与资料变更日志"
+  description="机场牛更新记录：按日期记录夯到拉榜单快照、品牌资料、栏目和工具的真实变更，只写实际发生的更新，不编造每周更新，方便你判断机场资料新不新、什么时候核对过。"
+  keywords={['机场牛更新记录', '机场榜单更新']}
+>
+  <Breadcrumbs items={[{ name: '更新记录', href: '/changelog/' }]} />
+  <h1>更新记录</h1>
+  <p class="lead">只记录真实发生的变更。榜单快照日期：{snapshot}。</p>
+  <ul>
+    {entries.map((e) => <li><b>{e.date}　{e.title}</b><br />{e.text}</li>)}
+  </ul>
+</BaseLayout>

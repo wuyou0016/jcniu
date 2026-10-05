@@ -1,0 +1,322 @@
+---
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import FaqBlock from '../../components/FaqBlock.astro';
+import TagChips from '../../components/TagChips.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+import { isDemoEntry } from '../../data/utils/demo-filter';
+import { getBoard } from '../../data/utils/board';
+import { cheapestMonthly, cleanLabel, planFacts } from '../../data/utils/provider-facts';
+import Icon from '../../components/Icon.astro';
+import { PAIR_COUNT_TOP, pairSlug } from '../../data/utils/compare';
+import { getArticleHref } from '../../data/utils/article-routing';
+import { buildProviderFaq, buildProductJsonLd } from '../../data/seo/provider-faq';
+import { getTagsForProvider } from '../../data/seo/seo-tags';
+import { SEO_COPY } from '../../data/seo/site-copy';
+
+export async function getStaticPaths() {
+  const board = await getBoard();
+  return board.rows.map((row) => ({ params: { slug: row.provider.data.slug }, props: { slug: row.provider.data.slug } }));
+}
+
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+const board = await getBoard();
+const row = board.rows.find((r) => r.provider.data.slug === slug)!;
+const provider = row.provider;
+const p = provider.data;
+const v = p.vendor;
+const tier = board.tiers.find((t) => t.id === row.tier)!;
+
+const [tests, articles] = await Promise.all([
+  getCollection('tests', ({ id }) => !isDemoEntry(id)),
+  getCollection('articles', ({ id }) => !isDemoEntry(id)),
+]);
+const providerTests = tests.filter((test) => test.data.providerId.id === provider.id);
+
+const plans = planFacts(provider);
+const cheapest = cheapestMonthly(provider);
+const routes = (v.routes ?? []).map(cleanLabel).filter(Boolean);
+const protocols = (v.protocols ?? []).map(cleanLabel).filter(Boolean);
+const regions = v.regions ?? [];
+const clients = v.clientSupport ?? [];
+
+// 标题：问句公式（"{品牌}机场怎么样？年份 线路词 机场推荐与资料核对"），线路词只取资料里真实存在的字段。
+const lineWord = routes.length > 0 ? `${routes[0]!.replace(/（.*$/, '')}${/专线/.test(routes[0]!) ? '' : '专线'}` : protocols.length > 0 ? `${protocols[0]}协议` : '';
+const title = lineWord
+  ? `${p.name}机场怎么样？2026 ${lineWord}机场推荐与价格资料核对｜机场牛`
+  : `${p.name}机场怎么样？2026 官网资料核对、价格与是否靠谱｜机场牛`;
+
+const priceBit = plans[0] ? `${plans[0].name}档${plans[0].price}${plans[0].quota ? `、${plans[0].quota}` : ''}` : '价格资料暂缺';
+const description = `${p.name}机场评测：${priceBit}${routes.length ? `，线路记录为${routes.join('、')}` : ''}${protocols.length ? `，协议${protocols.join('/')}` : ''}。机场牛把它排在夯到拉榜第 ${row.rank} 名（${tier.label}档），逐条标注价格、线路与来源类型，不替商家编造速度和解锁结论。`;
+
+const canonicalUrl = resolveCanonicalUrl(`/airports/${slug}/`);
+const providerFaq = buildProviderFaq(provider, providerTests.length);
+const providerTags = getTagsForProvider(provider);
+const productJsonLd = buildProductJsonLd(provider, canonicalUrl, description);
+
+const sameTier = tier ? board.rows.filter((r) => r.tier === row.tier && r.provider.data.slug !== slug).slice(0, 6) : [];
+const prev = board.rows.find((r) => r.rank === row.rank - 1);
+const next = board.rows.find((r) => r.rank === row.rank + 1);
+
+const missing: { title: string; hint: string }[] = [];
+if (plans.length === 0) missing.push({ title: '价格与套餐', hint: '没有可核实的公开价格资料，请以官网结算页为准，并确认计费周期。' });
+if (routes.length === 0) missing.push({ title: '线路类型', hint: '资料里没有写明是专线还是中转，可以向官方客服确认，或看官网套餐说明。' });
+else if ((v.routes ?? []).some((r) => /第三方|转述/.test(r))) missing.push({ title: '线路类型的官方说明', hint: '线路信息来自第三方转述，官网上是否有逐条说明需要你自己核对。' });
+if (protocols.length === 0) missing.push({ title: '协议', hint: '资料里没有写协议，导入订阅前请确认你的客户端支持。' });
+if (regions.length === 0) missing.push({ title: '节点地区', hint: '没有节点地区资料；访问对出口地区有限制的服务前，务必确认地区。' });
+if (clients.length === 0) missing.push({ title: '客户端支持', hint: '没有写明支持的客户端，买前确认订阅格式是否兼容 Clash、小火箭或 v2rayN。' });
+if (!plans.some((plan) => plan.cycle === '按月付费')) missing.push({ title: '月付选项与退款政策', hint: '资料里没有按月付费记录，想先试用的话，请先向官网确认。' });
+
+// 两两对比页只生成榜单前 N 名之间的组合；超出范围时回退到对比总表。
+function pairSlugFor(a: string, b: string, rows: typeof board.rows): string {
+  const idx = (x: string) => rows.findIndex((r) => r.provider.data.slug === x);
+  if (idx(a) < PAIR_COUNT_TOP && idx(b) < PAIR_COUNT_TOP) return idx(a) < idx(b) ? pairSlug(a, b) : pairSlug(b, a);
+  return '';
+}
+const prevPair = prev ? pairSlugFor(slug, prev.provider.data.slug, board.rows) : '';
+const nextPair = next ? pairSlugFor(slug, next.provider.data.slug, board.rows) : '';
+const guides: { label: string; href: string }[] = [{ label: '机场怎么选', href: '/guides/jichang-zenme-xuan/' }, { label: '机场年付还是月付', href: '/guides/jichang-nianfu-yuefu/' }];
+if (routes.some((r) => /IPLC|IEPL|专线/.test(r))) guides.push({ label: '专线机场值不值得买', href: '/guides/zhuanxian-jichang-zhidebuzhide/' }, { label: 'IPLC 和 IEPL 区别', href: '/knowledge/iplc-iepl-zhongzhuan-quebie/' });
+if (clients.some((c) => /clash/i.test(c))) guides.push({ label: 'Clash 机场推荐', href: '/guides/clash-jichang-tuijian/' });
+if (regions.some((r) => ['日本', '新加坡', '美国'].includes(r))) guides.push({ label: 'ChatGPT 机场推荐', href: '/guides/chatgpt-jichang-tuijian/' });
+if (plans.some((plan) => plan.cycle === '按月付费')) guides.push({ label: '月付机场推荐', href: '/rankings/monthly/' });
+guides.push({ label: '机场跑路预警', href: '/airport-warnings/' });
+
+const reviewArticle = articles.find((a) => a.id === `${slug}-review`);
+const isFirst = row.rank === 1;
+const notes = provider.data.thirdPartyNotes ?? [];
+const sourceTypeLabel: Record<string, string> = {
+  vendor: '官方公开信息',
+  'third-party': '第三方资料',
+  editorial: '站长/编辑确认',
+  'in-house': '本站实测',
+};
+const fmt = (value: Date | string) => (typeof value === 'string' ? new Date(value) : value).toISOString().slice(0, 10);
+
+const webPageJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: title,
+  url: canonicalUrl,
+  description,
+  dateModified: fmt(p.updatedAt),
+  inLanguage: 'zh-CN',
+};
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  modifiedTime={fmt(p.updatedAt)}
+  keywords={[`${p.name}机场`, `${p.name}怎么样`, '机场推荐', ...(routes.length ? [routes[0]!] : [])]}
+>
+  <Breadcrumbs
+    items={[
+      { name: '机场库', href: '/airports/' },
+      { name: p.name, href: `/airports/${slug}/` },
+    ]}
+  />
+
+  <header class="dossier-head" data-tier={tier.label}>
+    <div class="dossier-head__no" aria-label={`榜单第 ${row.rank} 名`}>{String(row.rank).padStart(2, '0')}</div>
+    <div>
+      <span class="section__eyebrow">AIRPORT DOSSIER · {board.rows.length} 家中的第 {row.rank} 名</span>
+      <h1>{p.name}机场推荐与资料档案</h1>
+      <p class="article-meta">
+        <span class={`tier-pill tier-pill--${row.tier}`}>{tier.label} · {tier.tagline}</span>
+        {isFirst && <span class="badge badge--gold"><span>👑 综合第一名</span></span>}
+        {p.status === 'watch' && <span class="source-badge">观察中</span>}
+        <span>资料核对于 {fmt(p.lastVerified)}</span>
+      </p>
+    </div>
+  </header>
+
+  <p class="lead">{row.reason}</p>
+
+  <div class={`official-cta${isFirst ? ' official-cta--gold' : ''}`} data-provider={slug} data-provider-name={p.name}>
+    <div>
+      <p class="official-cta__title">
+        {p.name}官网入口
+        {isFirst && <span class="badge badge--gold"><span>👑 夯档唯一</span></span>}
+      </p>
+      <p class="official-cta__desc">
+        价格、套餐与优惠以官网结算页为准，下单前请再核对一遍计费周期和续费规则。
+      </p>
+    </div>
+    <a
+      class={`btn ${isFirst ? 'btn--gold' : 'btn--primary'} btn--large`}
+      href={v.officialWebsite}
+      target="_blank"
+      rel="noopener nofollow sponsored"
+      data-analytics-event="official_cta_click"
+      data-provider={slug}
+      data-provider-name={p.name}
+      data-cta-label="品牌页官网入口"
+    >前往官网查看套餐</a>
+  </div>
+
+  <h2>{p.name}套餐与价格</h2>
+  {
+    plans.length > 0 ? (
+      <div class="table-wrap price-table">
+        <table>
+          <thead>
+            <tr><th>套餐</th><th>价格</th><th>计费周期</th><th>流量额度</th></tr>
+          </thead>
+          <tbody>
+            {plans.map((plan) => (
+              <tr>
+                <td>{plan.name}{cheapest && cheapest.plan.name === plan.name && plans.length > 1 && <span class="source-badge" style="margin-left:0.4rem">月均最低</span>}</td>
+                <td class={`num${cheapest && cheapest.plan.name === plan.name && plans.length > 1 ? ' is-min' : ''}`}>{plan.price}</td>
+                <td>{plan.cycle || '资料未注明'}</td>
+                <td>{plan.quota || '资料未注明'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ) : (
+      <div class="empty-state">
+        <p class="empty-state__title">价格资料空白</p>
+        <p>目前没有查到 {p.name} 可核实的公开价格，机场牛不写具体数字，请以官网结算页为准。</p>
+      </div>
+    )
+  }
+  <p class="muted">价格来源：{sourceTypeLabel[v.source.type] ?? v.source.type}（获取于 {fmt(v.source.retrievedAt)}）。{v.source.claim}</p>
+
+  <h2>线路、协议、地区与客户端</h2>
+  <div class="facts">
+    <div class="fact"><span class="fact__label">线路类型</span><span class="fact__value">{routes.length ? routes.join('、') : '资料空白'}</span></div>
+    <div class="fact"><span class="fact__label">协议</span><span class="fact__value">{protocols.length ? protocols.join('、') : '资料空白'}</span></div>
+    <div class="fact"><span class="fact__label">节点地区</span><span class="fact__value">{regions.length ? regions.join('、') : '资料空白'}</span></div>
+    <div class="fact"><span class="fact__label">客户端支持</span><span class="fact__value">{clients.length ? clients.join('、') : '资料空白'}</span></div>
+    <div class="fact"><span class="fact__label">晚高峰稳定性</span><span class="fact__value">实时检测中</span></div>
+    <div class="fact"><span class="fact__label">流媒体 / AI 工具可用性</span><span class="fact__value">实时检测中</span></div>
+  </div>
+  {
+    routes.some((r) => /第三方|转述/.test((v.routes ?? []).join(''))) && (
+      <p class="muted">线路与协议后面标注“第三方资料”的，意味着来源是转述而不是官网逐条说明，机场牛没有独立核实。</p>
+    )
+  }
+
+  <h2>机场牛怎么看{p.name}</h2>
+  <div class="info-panel">
+    <p>{p.editorial.summary}</p>
+  </div>
+  <div class="vs-grid">
+    <div class="vs-card vs-card--paid">
+      <h3>资料里的亮点</h3>
+      <ul>{p.editorial.pros.map((item) => <li>{item}</li>)}</ul>
+    </div>
+    <div class="vs-card vs-card--free">
+      <h3>需要留意的地方</h3>
+      <ul>{p.editorial.cons.map((item) => <li>{item}</li>)}</ul>
+    </div>
+  </div>
+  <div class="vs-grid" style="margin-top:1.1rem">
+    <div class="vs-card">
+      <h3>适合谁</h3>
+      <ul>{p.editorial.suitableFor.map((item) => <li>{item}</li>)}</ul>
+    </div>
+    <div class="vs-card">
+      <h3>不太适合谁</h3>
+      <ul>{p.editorial.notSuitableFor.map((item) => <li>{item}</li>)}</ul>
+    </div>
+  </div>
+
+  {
+    notes.length > 0 && (
+      <>
+        <h2>第三方资料怎么说</h2>
+        <ul>
+          {notes.map((note) => (
+            <li>
+              <b>{note.source}</b>（{fmt(note.date)}）：{note.claim}
+            </li>
+          ))}
+        </ul>
+        <p class="muted">以上为来源方的说法，机场牛如实转述，未经独立核实；优惠码是否仍有效，请以官网结算页为准。</p>
+      </>
+    )
+  }
+
+  {reviewArticle && <p>完整评测见《<a href={getArticleHref(reviewArticle)}>{reviewArticle.data.title}</a>》。</p>}
+
+  <h2>下单前，这几项要你自己向官网确认</h2>
+  {
+    missing.length > 0 ? (
+      <>
+        <p>机场牛资料里下面这些项目是空白的（或来源只有转述），下单前请到官网核对，别拿别人的“听说”当依据：</p>
+        <ul class="check-list">
+          {missing.map((m) => (
+            <li>
+              <label>
+                <Icon name="alert" size={18} />
+                <span>{m.title}<small>{m.hint}</small></span>
+              </label>
+            </li>
+          ))}
+        </ul>
+      </>
+    ) : (
+      <p>价格、线路、协议、地区和客户端在资料里都有记录，下单前仍建议到官网结算页核对最终价格和续费规则。</p>
+    )
+  }
+  <p>
+    通用的买前检查可以用<a href="/tools/airport-checklist/">买前自检清单</a>，套餐折算用<a href="/tools/cost-calculator/">机场价格换算器</a>。
+  </p>
+
+  <h2>和前后名对比</h2>
+  <div class="neighbors">
+    {prev ? (
+      <a href={prevPair ? `/compare/${prevPair}/` : '/compare/'} class="neighbors__prev"><small>上一名</small>{p.name} 和 {prev.provider.data.name} 哪个好 →</a>
+    ) : <span />}
+    {next ? (
+      <a href={nextPair ? `/compare/${nextPair}/` : '/compare/'} class="neighbors__next"><small>下一名</small>{p.name} 和 {next.provider.data.name} 哪个好 →</a>
+    ) : <span />}
+  </div>
+
+  <h2>相关选购指南</h2>
+  <ul class="quick-links">
+    {guides.map((g) => <li><a href={g.href}>{g.label}</a></li>)}
+  </ul>
+
+  <h2>同档位的其他机场</h2>
+  {
+    sameTier.length > 0 ? (
+      <ul class="quick-links">
+        {sameTier.map((r) => (
+          <li><a href={`/airports/${r.provider.data.slug}/`}>{r.provider.data.name}</a></li>
+        ))}
+      </ul>
+    ) : (
+      <p>{tier.label}档目前只有 {p.name} 一家。</p>
+    )
+  }
+  <p>
+    {prev && <>上一名：<a href={`/airports/${prev.provider.data.slug}/`}>{prev.provider.data.name}</a>　</>}
+    {next && <>下一名：<a href={`/airports/${next.provider.data.slug}/`}>{next.provider.data.name}</a></>}
+  </p>
+
+  <TagChips tags={providerTags} />
+  <FaqBlock heading={SEO_COPY.providerFaqHeading(p.name)} items={providerFaq} />
+
+  <h2>继续了解</h2>
+  <ul class="quick-links">
+    <li><a href="/rankings/">机场推荐排行榜</a></li>
+    <li><a href="/compare/">机场对比总表</a></li>
+    <li><a href="/coupons/">机场优惠码</a></li>
+    <li><a href="/airport-warnings/">机场跑路预警</a></li>
+    <li><a href="/guides/jichang-zenme-xuan/">机场怎么选</a></li>
+    <li><a href="/faq/">{SEO_COPY.faqLinkLabel}</a></li>
+  </ul>
+
+  <script type="application/ld+json" set:html={JSON.stringify(webPageJsonLd)} />
+  <script type="application/ld+json" set:html={JSON.stringify(productJsonLd)} />
+</BaseLayout>

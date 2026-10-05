@@ -1,0 +1,82 @@
+---
+import { siteConfig } from '../config/site';
+import logoSvg from '../../public/favicon.svg?raw';
+
+// 顶部导航只放一级入口；教程/知识库/术语库/标签等放在页脚和各 Hub 页里互相导流。
+const navItems = [
+  { label: '排行榜', href: '/rankings/' },
+  { label: '机场库', href: '/airports/' },
+  { label: '机场对比', href: '/compare/' },
+  { label: '优惠码', href: '/coupons/' },
+  { label: '客户端', href: '/clients/' },
+  { label: '选购指南', href: '/guides/' },
+  { label: '避坑预警', href: '/airport-warnings/' },
+  { label: '在线工具', href: '/tools/' },
+];
+
+const pathname = Astro.url.pathname;
+function isActive(href: string): boolean {
+  return pathname === href || pathname.startsWith(href);
+}
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a href="/" class="site-header__logo" aria-label={`${siteConfig.brandName}首页`}>
+      <span class="site-header__logo-icon" aria-hidden="true" set:html={logoSvg} />
+      <span class="site-header__logo-text">
+        <span class="site-header__logo-name">{siteConfig.brandName}</span>
+        <span class="site-header__logo-tagline">机场推荐 · 夯到拉分档榜</span>
+      </span>
+    </a>
+
+    <nav class="site-header__nav-desktop site-nav" aria-label="主导航">
+      {
+        navItems.map((item) => (
+          <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="site-header__actions">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="切换明暗主题" title="切换明暗主题">
+        <span class="theme-toggle__sun" aria-hidden="true">☀</span>
+        <span class="theme-toggle__moon" aria-hidden="true">☾</span>
+      </button>
+      <button type="button" class="site-header__toggle" id="nav-toggle" aria-label="打开菜单" aria-expanded="false" aria-controls="mobile-nav">
+        <span aria-hidden="true">☰</span>
+      </button>
+    </div>
+  </div>
+  <nav class="site-header__mobile site-nav" id="mobile-nav" aria-label="移动端导航">
+    {navItems.map((item) => <a href={item.href}>{item.label}</a>)}
+    <a href="/faq/">机场常见问题</a>
+    <a href="/tutorials/">使用教程</a>
+  </nav>
+</header>
+
+<script is:inline>
+  (function () {
+    var root = document.documentElement;
+    var themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try {
+          localStorage.setItem('jn-theme', next);
+        } catch (e) {}
+      });
+    }
+    var toggle = document.getElementById('nav-toggle');
+    var panel = document.getElementById('mobile-nav');
+    if (toggle && panel) {
+      toggle.addEventListener('click', function () {
+        var open = panel.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+  })();
+</script>

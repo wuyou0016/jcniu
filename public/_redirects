@@ -1,0 +1,5 @@
+# Cloudflare Pages 原生重定向文件（比 HTML meta-refresh 更好——这是真正的 HTTP 301，
+# 在边缘节点直接处理，搜索引擎和站长工具都能正确识别）。
+# @astrojs/sitemap 只生成 sitemap-index.xml，不生成 sitemap.xml，但后者是最常见的
+# 默认猜测路径，不重定向会 404。
+/sitemap.xml /sitemap-index.xml 301

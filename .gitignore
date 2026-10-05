@@ -1,0 +1,39 @@
+# build output
+dist/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# Claude Code local-machine settings (per-machine tool permissions, not project config)
+.claude/settings.local.json
+
+
+# Cloudflare Wrangler 本地构建缓存（每次 wrangler pages dev/deploy 都会
+# 重新生成，不应该进版本库）
+.wrangler/
+
+# 内部写作/站群规则文档与本机助手配置：不进公开仓库
+AGENTS.md
+CLAUDE.md
+docs/
+.claude/
+.vscode/

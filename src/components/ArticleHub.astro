@@ -1,0 +1,58 @@
+---
+// 栏目 Hub 页通用外壳：按 category 分组列出该栏目的全部文章，顶部是栏目导语。
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import { getArticleHref } from '../data/utils/article-routing';
+import { isDemoEntry } from '../data/utils/demo-filter';
+
+interface Props {
+  type: CollectionEntry<'articles'>['data']['type'];
+  title: string;
+  description: string;
+  h1: string;
+  breadcrumb: string;
+  href: string;
+  keywords?: string[];
+  eyebrow?: string;
+}
+
+const { type, title, description, h1, breadcrumb, href, keywords, eyebrow } = Astro.props;
+const articles = (await getCollection('articles', ({ id, data }) => !isDemoEntry(id) && data.type === type)).sort(
+  (a, b) => b.data.updatedAt.getTime() - a.data.updatedAt.getTime(),
+);
+const categories = [...new Set(articles.map((article) => article.data.category))];
+---
+
+<BaseLayout title={title} description={description} keywords={keywords}>
+  <Breadcrumbs items={[{ name: breadcrumb, href }]} />
+  {eyebrow && <span class="section__eyebrow">{eyebrow}</span>}
+  <h1>{h1}</h1>
+  <p class="lead">{description}</p>
+  <slot name="intro" />
+
+  {
+    categories.map((category) => (
+      <section class="section">
+        <div class="section__head">
+          <h2>{category}</h2>
+        </div>
+        <div class="entry-grid">
+          {articles
+            .filter((article) => article.data.category === category)
+            .map((article) => (
+              <a class="entry-card" href={getArticleHref(article)}>
+                <span class="entry-card__kicker">{article.data.primaryKeyword}</span>
+                <span class="entry-card__title">{article.data.title}</span>
+                <p class="entry-card__description">{article.data.description}</p>
+                <span class="entry-card__cta">阅读全文 →</span>
+              </a>
+            ))}
+        </div>
+      </section>
+    ))
+  }
+  {articles.length === 0 && <div class="empty-state"><p class="empty-state__title">这个栏目正在建设中</p><p>内容陆续上线，先看看<a href="/rankings/">机场推荐排行榜</a>。</p></div>}
+  <slot />
+</BaseLayout>

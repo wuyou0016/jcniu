@@ -1,0 +1,43 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { isDemoEntry } from '../../data/utils/demo-filter';
+
+const terms = (await getCollection('glossary', ({ id }) => !isDemoEntry(id))).sort((a, b) =>
+  a.data.term.localeCompare(b.data.term, 'zh-Hans-CN'),
+);
+---
+
+<BaseLayout
+  title="机场术语库｜IPLC、IEPL、VLESS、Trojan、倍率、节点名词解释｜机场牛"
+  description="机场术语库：IPLC、IEPL、BGP 中转、VLESS、Trojan、Hysteria2、Shadowsocks、倍率、原生 IP、白名单 IP、不限速宣传等机场和梯子常见名词，用大白话解释，并说明选机场时该怎么看。"
+  keywords={['机场术语', 'IPLC', 'IEPL', 'VLESS', 'Trojan', 'Hysteria2', '流量倍率']}
+>
+  <Breadcrumbs items={[{ name: '术语库', href: '/glossary/' }]} />
+  <span class="section__eyebrow">GLOSSARY</span>
+  <h1>机场术语库：把名词讲成人话</h1>
+  <p class="lead">看机场套餐页经常被一堆缩写绕晕。这里收录常见名词，每条都说明它是什么、选机场时怎么看、和哪些概念容易混。</p>
+
+  {
+    terms.length > 0 ? (
+      <div class="entry-grid">
+        {terms.map((term) => (
+          <a class="entry-card" href={`/glossary/${term.id}/`}>
+            <span class="entry-card__title">{term.data.term}</span>
+            <p class="entry-card__description">{term.data.definition}</p>
+            <span class="entry-card__cta">展开解释 →</span>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <div class="empty-state"><p class="empty-state__title">术语库建设中</p></div>
+    )
+  }
+
+  <ul class="quick-links">
+    <li><a href="/knowledge/">机场知识库</a></li>
+    <li><a href="/guides/">机场选购指南</a></li>
+    <li><a href="/rankings/">机场推荐排行榜</a></li>
+  </ul>
+</BaseLayout>

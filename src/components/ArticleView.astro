@@ -1,0 +1,224 @@
+---
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import FaqBlock from './FaqBlock.astro';
+import TagChips from './TagChips.astro';
+import RankBlock from './RankBlock.astro';
+import { siteConfig } from '../config/site';
+import { resolveCanonicalUrl } from '../config/seo';
+import { estimateReadingTimeMinutes } from '../data/utils/reading-time';
+import { articleTypeLabel, getArticleHref } from '../data/utils/article-routing';
+import { isDemoEntry } from '../data/utils/demo-filter';
+import { getBoard } from '../data/utils/board';
+import { getTagsForArticle } from '../data/seo/seo-tags';
+import logoSvg from '../../public/favicon.svg?raw';
+import { SEO_COPY } from '../data/seo/site-copy';
+
+interface Props {
+  article: CollectionEntry<'articles'>;
+  hubLabel: string;
+  hubHref: string;
+}
+
+const { article, hubLabel, hubHref } = Astro.props;
+const { Content, headings } = await render(article);
+const data = article.data;
+
+const tocHeadings = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const showToc = headings.filter((h) => h.depth === 2).length >= 3;
+
+const difficultyLabel = { beginner: '入门', intermediate: '进阶', advanced: '高级' } as const;
+const readingTime = estimateReadingTimeMinutes(article.body ?? '');
+const fmt = (value: Date | string) => (typeof value === 'string' ? new Date(value) : value).toISOString().slice(0, 10);
+const publishedAtLabel = fmt(data.publishedAt);
+const updatedAtLabel = fmt(data.updatedAt);
+
+const allArticles = await getCollection('articles', ({ id }) => !isDemoEntry(id));
+const glossary = await getCollection('glossary', ({ id }) => !isDemoEntry(id));
+const related: { title: string; href: string }[] = [];
+const PAGE_ALIASES: Record<string, { title: string; href: string }> = {
+  'free-airport-placeholder': { title: '免费机场靠谱吗？免费节点与付费机场的区别', href: '/free-airport/' },
+  'coupons-placeholder': { title: '机场优惠码汇总与使用方法', href: '/coupons/' },
+};
+for (const topicId of data.relatedTopics ?? []) {
+  if (PAGE_ALIASES[topicId]) {
+    related.push(PAGE_ALIASES[topicId]!);
+    continue;
+  }
+  const a = allArticles.find((entry) => entry.id === topicId);
+  if (a) {
+    related.push({ title: a.data.title, href: getArticleHref(a) });
+    continue;
+  }
+  const g = glossary.find((entry) => entry.id === topicId);
+  if (g) related.push({ title: `${g.data.term}是什么`, href: `/glossary/${g.id}/` });
+}
+// 同栏目补齐：相关内容不足 4 条时，从同分类/同类型文章里补，保证每篇文章都有足够的内链。
+for (const candidate of allArticles) {
+  if (related.length >= 5) break;
+  if (candidate.id === article.id) continue;
+  if (related.some((item) => item.href === getArticleHref(candidate))) continue;
+  if (candidate.data.category === data.category || candidate.data.type === data.type) {
+    related.push({ title: candidate.data.title, href: getArticleHref(candidate) });
+  }
+}
+
+const board = await getBoard();
+const h2s = headings.filter((h) => h.depth === 2).slice(0, 6);
+const top3 = board.rows.slice(0, 3);
+const tierLabelMap = new Map(board.tiers.map((t) => [t.id, t.label]));
+const tags = getTagsForArticle(article);
+const faqs = data.faqs ?? [];
+
+const canonicalUrl = resolveCanonicalUrl(getArticleHref(article));
+const articleJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: data.title,
+  description: data.description,
+  datePublished: publishedAtLabel,
+  dateModified: updatedAtLabel,
+  inLanguage: 'zh-CN',
+  mainEntityOfPage: canonicalUrl,
+  author: { '@type': 'Organization', name: siteConfig.author.name },
+  publisher: { '@type': 'Organization', name: siteConfig.brandName },
+  url: canonicalUrl,
+};
+const keywords = [data.primaryKeyword, ...(data.secondaryKeywords ?? [])];
+---
+
+<BaseLayout
+  title={data.title}
+  description={data.description}
+  ogType="article"
+  publishedTime={publishedAtLabel}
+  modifiedTime={updatedAtLabel}
+  keywords={keywords}
+>
+  <Breadcrumbs
+    items={[
+      { name: hubLabel, href: hubHref },
+      { name: data.title, href: getArticleHref(article) },
+    ]}
+  />
+
+  <div class="article-layout">
+    <article class="prose">
+      <h1>{data.title}</h1>
+      <div class="byline">
+        <span class="byline__avatar" aria-hidden="true" set:html={logoSvg} />
+        <span>{siteConfig.author.name} · 更新于 {updatedAtLabel}</span>
+      </div>
+      <p class="article-meta">
+        <span>{articleTypeLabel[data.type]}</span>
+        {data.category !== articleTypeLabel[data.type] && <span>分类：{data.category}</span>}
+        {data.difficulty && <span>难度：{difficultyLabel[data.difficulty]}</span>}
+        <span>发布 {publishedAtLabel}</span>
+        {updatedAtLabel !== publishedAtLabel && <span>更新 {updatedAtLabel}</span>}
+        <span>约 {readingTime} 分钟读完</span>
+      </p>
+
+      {data.symptom && (
+        <div class="callout callout--warn">
+          <h3>你遇到的症状</h3>
+          <p>{data.symptom}</p>
+        </div>
+      )}
+
+      {h2s.length >= 3 && (
+        <div class="takeaways">
+          <span class="takeaways__label">本文要点</span>
+          <ol>
+            {h2s.map((h) => (
+              <li><a href={`#${h.slug}`}>{h.text}</a></li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      <Content />
+
+      {data.rankBlock !== 'none' && (
+        <RankBlock kind={data.rankBlock} rows={board.rows} tiers={board.tiers} heading={data.rankBlockHeading} />
+      )}
+
+      {faqs.length > 0 && <FaqBlock heading={`${data.primaryKeyword}常见问题`} items={faqs} />}
+
+      {related.length > 0 && (
+        <>
+          <h2>延伸阅读</h2>
+          <ul class="quick-links">
+            {related.map((item) => (
+              <li>
+                <a href={item.href}>{item.title}</a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      <TagChips tags={tags} />
+
+      <div class="callout">
+        <h3>还没想好选哪家？先看夯到拉榜</h3>
+        <p>
+          机场牛把 {board.rows.length} 家机场按资料透明度分成夯到拉完了六档，价格、线路和来源一页摆清楚。
+          <a href="/rankings/">打开机场推荐排行榜</a>，或者直接看
+          <a href="/rankings/cheap/">便宜机场</a>、<a href="/rankings/dedicated-line/">专线机场</a>、<a href="/coupons/">优惠码</a>。
+        </p>
+      </div>
+    </article>
+
+    <aside class="article-side">
+      {
+        showToc && (
+          <nav class="article-toc" aria-label="文章目录">
+            <p class="article-toc__label">本文目录</p>
+            <ol>
+              {tocHeadings.map((heading) => (
+                <li>
+                  <a href={`#${heading.slug}`} class={heading.depth === 3 ? 'toc-h3' : undefined}>
+                    {heading.text}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )
+      }
+      <div class="side-rank">
+        <p class="side-rank__title">榜单前三 · 夯到拉</p>
+        <ol>
+          {top3.map((row) => (
+            <li>
+              <a href={`/airports/${row.provider.data.slug}/`}>
+                <span class="side-rank__no">{row.rank}</span>
+                {row.provider.data.name}
+                <span class={`tier-pill tier-pill--${row.tier}`}>{tierLabelMap.get(row.tier)}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+        <p style="margin:0.6rem 0 0"><a href="/rankings/">完整榜单 →</a></p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="reading-progress" id="reading-progress" aria-hidden="true"></div>
+  <script is:inline>
+    (function () {
+      var bar = document.getElementById('reading-progress');
+      if (!bar) return;
+      function update() {
+        var h = document.documentElement;
+        var max = h.scrollHeight - h.clientHeight;
+        bar.style.width = (max > 0 ? Math.min(100, (h.scrollTop / max) * 100) : 0) + '%';
+      }
+      window.addEventListener('scroll', update, { passive: true });
+      update();
+    })();
+  </script>
+  <script type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
+</BaseLayout>

@@ -1,0 +1,90 @@
+---
+import SEOHead from '../components/SEOHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Analytics from '../components/Analytics.astro';
+import { siteConfig } from '../config/site';
+import { resolveCanonicalUrl, type RobotsDirective } from '../config/seo';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  robots?: RobotsDirective;
+  ogType?: 'website' | 'article';
+  ogImage?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  keywords?: string[];
+}
+
+const { title, description, robots, ogType, ogImage, publishedTime, modifiedTime, keywords } = Astro.props;
+const pathname = Astro.url.pathname;
+const homepageUrl = resolveCanonicalUrl('/');
+
+// 网站级 JSON-LD：只在此处生成一次，覆盖全站，不逐页重复声明。
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: siteConfig.brandName,
+  alternateName: siteConfig.brandNameEn,
+  url: homepageUrl,
+  inLanguage: 'zh-CN',
+};
+
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: siteConfig.brandName,
+  url: homepageUrl,
+  logo: `${homepageUrl}icon-512.png`,
+};
+---
+
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#17120d" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <script is:inline>
+      // 在首次绘制前设置 data-theme，避免切换主题时出现刷新闪烁（FOUC）。
+      // 优先级：用户在本站保存过的选择 > 系统颜色偏好。纯内联、同步执行，不依赖外部脚本。
+      (function () {
+        try {
+          var stored = localStorage.getItem('jn-theme');
+          var theme = stored === 'light' || stored === 'dark' ? stored : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
+    <SEOHead
+      title={title}
+      description={description}
+      pathname={pathname}
+      robots={robots}
+      ogType={ogType}
+      ogImage={ogImage}
+      publishedTime={publishedTime}
+      modifiedTime={modifiedTime}
+      keywords={keywords}
+    />
+    <script type="application/ld+json" set:html={JSON.stringify(websiteJsonLd)} />
+    <script type="application/ld+json" set:html={JSON.stringify(organizationJsonLd)} />
+    <Analytics />
+  </head>
+  <body>
+    <div class="tier-bar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <Header />
+    <main class="container">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

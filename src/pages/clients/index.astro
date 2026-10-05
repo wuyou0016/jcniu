@@ -1,0 +1,30 @@
+---
+import ArticleHub from '../../components/ArticleHub.astro';
+---
+
+<ArticleHub
+  type="client"
+  title="机场客户端大全：Clash Verge、小火箭、v2rayN、Mihomo、Sing-box 怎么选｜机场牛"
+  description="机场客户端和平台教程大全：Clash Verge、Shadowrocket 小火箭、v2rayN、Mihomo、Sing-box 的下载渠道与使用要点，以及 Windows、Mac、安卓、iOS、鸿蒙各平台怎么选客户端。"
+  h1="机场客户端与平台教程：先认设备，再选客户端"
+  breadcrumb="客户端与平台"
+  href="/clients/"
+  keywords={['Clash Verge下载','小火箭机场','v2rayN机场','Mihomo','Sing-box','Windows客户端教程']}
+  eyebrow="CLIENTS">
+  <Fragment slot="intro">
+    <h2>先认设备：每个平台常见的客户端</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>你的设备</th><th>常见客户端（通用情况，以官方为准）</th><th>怎么选</th></tr></thead>
+        <tbody>
+          <tr><td><b>Windows</b></td><td>Clash Verge Rev、Mihomo Party、v2rayN、Sing-box</td><td><a href="/clients/windows-jichang-kehuduan/">Windows 客户端教程</a></td></tr>
+          <tr><td><b>Mac</b></td><td>Clash Verge Rev、Mihomo Party、Sing-box、Surge（付费）</td><td><a href="/clients/mac-jichang-kehuduan/">Mac 客户端教程</a></td></tr>
+          <tr><td><b>安卓</b></td><td>基于 Mihomo 或 Sing-box 的客户端、v2rayNG</td><td><a href="/clients/android-jichang-jiaocheng/">安卓机场教程</a></td></tr>
+          <tr><td><b>iPhone / iPad</b></td><td>Shadowrocket 小火箭、Stash、Sing-box、Loon（多为付费应用）</td><td><a href="/clients/ios-jichang-jiaocheng/">iOS 机场教程</a></td></tr>
+          <tr><td><b>华为鸿蒙</b></td><td>生态变化快，以应用市场和官方说明为准</td><td><a href="/clients/harmonyos-jichang-jiaocheng/">鸿蒙机场教程</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">不想自己翻文章？用<a href="/tools/client-picker/">客户端选择器</a>，选设备和协议直接出推荐。下载请只走官方渠道，不要信第三方“破解版”。</p>
+  </Fragment>
+</ArticleHub>

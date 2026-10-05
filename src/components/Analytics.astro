@@ -1,0 +1,91 @@
+---
+import { analyticsConfig } from '../config/analytics';
+
+const { siteId, ga4MeasurementId, cloudflareBeaconToken, zztoolsSiteId, clarityProjectId } = analyticsConfig;
+---
+
+{
+  ga4MeasurementId && (
+    <>
+      <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4MeasurementId}`}></script>
+      <script define:vars={{ ga4MeasurementId, siteId }}>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          dataLayer.push(arguments);
+        }
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', ga4MeasurementId, { site_id: siteId });
+      </script>
+    </>
+  )
+}
+
+{
+  cloudflareBeaconToken && (
+    <script
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon={JSON.stringify({ token: cloudflareBeaconToken })}
+    />
+  )
+}
+
+{
+  zztoolsSiteId && (
+    <script defer src="//zztools.cc/stat/assets/js/tk.js" data-sid={zztoolsSiteId}></script>
+  )
+}
+
+{
+  clarityProjectId && (
+    <script define:vars={{ clarityProjectId }} is:inline type="text/javascript">
+      (function (c, l, a, r, i, t, y) {
+        c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+        t = l.createElement(r); t.async = 1; t.src = 'https://www.clarity.ms/tag/' + i;
+        y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+      })(window, document, 'clarity', 'script', clarityProjectId);
+    </script>
+  )
+}
+
+<script define:vars={{ siteId }}>
+  // 通用推荐位/CTA 点击追踪：页面上有 data-analytics-event 属性的元素被点击时，
+  // 统一上报"站点 + 页面 + 品牌 + CTA"四个维度到 gtag / dataLayer（配置了对应统计平台才会生效）。
+  function report(eventName, el) {
+    const payload = {
+      site: siteId,
+      page_path: location.pathname,
+      provider_slug: el.getAttribute('data-provider') || '',
+      provider_name: el.getAttribute('data-provider-name') || '',
+      cta_label: el.getAttribute('data-cta-label') || (el.textContent || '').trim().slice(0, 60),
+      outbound_url: el.tagName === 'A' ? el.href : '',
+    };
+    if (typeof window.gtag === 'function') window.gtag('event', eventName, payload);
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: eventName, ...payload });
+  }
+
+  document.addEventListener(
+    'click',
+    function (event) {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const tagged = target.closest('[data-analytics-event]');
+      if (tagged) {
+        report(tagged.getAttribute('data-analytics-event'), tagged);
+        return;
+      }
+      const anchor = target.closest('a[href]');
+      if (!anchor) return;
+      try {
+        const url = new URL(anchor.getAttribute('href'), location.href);
+        if (url.hostname === location.hostname) return;
+      } catch (e) {
+        return;
+      }
+      report('outbound_link_click', anchor);
+    },
+    true,
+  );
+</script>

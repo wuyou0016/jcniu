@@ -1,0 +1,82 @@
+---
+import { siteConfig } from '../config/site';
+
+const telegramUrl = 'https://t.me/wyolink';
+
+const coreLinks = [
+  { label: '首页', href: '/' },
+  { label: '机场库', href: '/airports/' },
+  { label: '机场对比', href: '/compare/' },
+  { label: '选购指南', href: '/guides/' },
+  { label: '客户端与平台', href: '/clients/' },
+  { label: '使用教程', href: '/tutorials/' },
+  { label: '知识库', href: '/knowledge/' },
+  { label: '故障排查', href: '/troubleshooting/' },
+  { label: '术语库', href: '/glossary/' },
+];
+
+// 核心主题：直接指向各关键词的"主战页面"（一词一页，见 docs/keyword-registry.md）。
+const topicLinks = [
+  { label: '机场推荐排行榜', href: '/rankings/' },
+  { label: '便宜机场推荐', href: '/rankings/cheap/' },
+  { label: '专线机场推荐', href: '/rankings/dedicated-line/' },
+  { label: '月付机场推荐', href: '/rankings/monthly/' },
+  { label: '稳定机场推荐', href: '/rankings/stable/' },
+  { label: 'Clash 机场推荐', href: '/guides/clash-jichang-tuijian/' },
+  { label: '机场优惠码', href: '/coupons/' },
+  { label: '机场跑路预警', href: '/airport-warnings/' },
+  { label: '免费机场与付费机场', href: '/free-airport/' },
+];
+
+// 全站群统一的 5 个固定外链（标签+域名固定，见 handoff-network-rules-v2.md）。
+const friendLinks = [
+  { label: '机场推荐 - 机场宝', href: 'https://jichangbao.com' },
+  { label: '翻墙机场 - 火箭机场', href: 'https://rocketjichang.com' },
+  { label: '机场测评 - 机场E家', href: 'https://ejichang.com' },
+  { label: '机场导航 - 机场TJ', href: 'https://jichangtj.net' },
+  { label: '机场实验室 - 机场测速', href: 'https://jichanglabs.co' },
+];
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-legend" aria-label="五档图例">
+      <span class="tier-pill tier-pill--hang">夯</span><span class="tier-pill tier-pill--top">顶级</span><span class="tier-pill tier-pill--rsr">人上人</span><span class="tier-pill tier-pill--npc">NPC</span><span class="tier-pill tier-pill--lu">路人</span><span class="tier-pill tier-pill--laliao">拉完了</span>
+    </div>
+  </div>
+  <div class="container site-footer__inner">
+    <div>
+      <h2>{siteConfig.brandName}</h2>
+      <p>机场牛把机场按资料透明度从“夯”排到“拉”：先把价格、线路、协议、来源摆清楚，再谈推荐。没有来源的数据不写，查不到的就留白。</p>
+    </div>
+    <div>
+      <h2>站内导航</h2>
+      <ul>
+        {coreLinks.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+    </div>
+    <div>
+      <h2>热门主题</h2>
+      <ul>
+        {topicLinks.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+    </div>
+    <div>
+      <h2>友情链接</h2>
+      <ul>
+        {friendLinks.map((item) => <li><a href={item.href} target="_blank" rel="noopener">{item.label}</a></li>)}
+      </ul>
+    </div>
+  </div>
+  <div class="container site-footer__note">
+    <h2>网站说明</h2>
+    <p>本站整理机场代理服务商公开可查的资料，并标注每条信息来自官方、第三方还是编辑观点。榜单档位只反映资料透明度，不代表速度、稳定性或解锁能力；价格以各品牌官网结算页为准。请遵守所在地法律法规，本站不提供法律意见。</p>
+    <p><b>推广披露：</b>本站品牌官网入口使用品牌提供的推广链接，读者通过链接购买时机场牛可能获得佣金；档位只由资料透明度决定，对所有品牌用同一套规则，不因合作与否改变。</p>
+  </div>
+  <div class="container site-footer__bottom">
+    <p>&copy; {currentYear} {siteConfig.brandName}（{siteConfig.brandNameEn}）· <a href="/about/">评定规则</a> · <a href="/privacy/">隐私说明</a> · <a href="/changelog/">更新记录</a></p>
+    <a href={telegramUrl} target="_blank" rel="noopener" class="site-footer__apply-link">入驻申请</a>
+  </div>
+</footer>

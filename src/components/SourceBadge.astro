@@ -1,0 +1,18 @@
+---
+export interface Props {
+  type: 'vendor' | 'in-house' | 'third-party' | 'editorial' | 'calculated' | 'rank-override';
+}
+
+const { type } = Astro.props;
+
+const labelByType: Record<Props['type'], string> = {
+  vendor: '官方公开信息',
+  'in-house': '本站实测',
+  'third-party': '第三方资料',
+  editorial: '编辑观点',
+  calculated: '客观计算',
+  'rank-override': '综合推荐',
+};
+---
+
+<span class={`source-badge source-badge--${type}`}>{labelByType[type]}</span>

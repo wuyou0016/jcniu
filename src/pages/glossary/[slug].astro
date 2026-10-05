@@ -1,0 +1,82 @@
+---
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { resolveCanonicalUrl } from '../../config/seo';
+import { isDemoEntry } from '../../data/utils/demo-filter';
+import { getArticleHref } from '../../data/utils/article-routing';
+
+export async function getStaticPaths() {
+  const terms = await getCollection('glossary', ({ id }) => !isDemoEntry(id));
+  return terms.map((term) => ({ params: { slug: term.id }, props: { term } }));
+}
+
+interface Props {
+  term: CollectionEntry<'glossary'>;
+}
+
+const { term } = Astro.props;
+const { Content } = await render(term);
+const data = term.data;
+const all = await getCollection('glossary', ({ id }) => !isDemoEntry(id));
+const articles = await getCollection('articles', ({ id }) => !isDemoEntry(id));
+const relatedTerms = (data.relatedTerms ?? [])
+  .map((id) => all.find((entry) => entry.id === id))
+  .filter((entry): entry is CollectionEntry<'glossary'> => Boolean(entry));
+const relatedArticles = (data.relatedArticles ?? [])
+  .map((id) => articles.find((entry) => entry.id === id))
+  .filter((entry): entry is CollectionEntry<'articles'> => Boolean(entry));
+
+const title = `${data.term}是什么？${data.definition.slice(0, 22)}｜机场牛术语库`;
+const description = `${data.term}是什么意思：${data.definition}${data.extendedExplanation ? data.extendedExplanation.slice(0, 60) : ''}`.slice(0, 158);
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'DefinedTerm',
+  name: data.term,
+  description: data.definition,
+  url: resolveCanonicalUrl(`/glossary/${term.id}/`),
+  inDefinedTermSet: resolveCanonicalUrl('/glossary/'),
+};
+---
+
+<BaseLayout title={title} description={description} keywords={[data.term, `${data.term}是什么`, ...(data.aliases ?? [])]}>
+  <Breadcrumbs
+    items={[
+      { name: '术语库', href: '/glossary/' },
+      { name: data.term, href: `/glossary/${term.id}/` },
+    ]}
+  />
+  <article class="prose" style="max-width:var(--content-width)">
+    <span class="section__eyebrow">TERM</span>
+    <h1>{data.term}是什么</h1>
+    <div class="callout">
+      <p><b>一句话：</b>{data.definition}</p>
+    </div>
+    {data.extendedExplanation && <p>{data.extendedExplanation}</p>}
+    <Content />
+
+    {
+      relatedTerms.length > 0 && (
+        <>
+          <h2>容易混淆的相关术语</h2>
+          <ul class="quick-links">
+            {relatedTerms.map((t) => <li><a href={`/glossary/${t.id}/`}>{t.data.term}</a></li>)}
+          </ul>
+        </>
+      )
+    }
+    {
+      relatedArticles.length > 0 && (
+        <>
+          <h2>延伸阅读</h2>
+          <ul class="quick-links">
+            {relatedArticles.map((a) => <li><a href={getArticleHref(a)}>{a.data.title}</a></li>)}
+          </ul>
+        </>
+      )
+    }
+    <p>想看哪些机场资料里写明了相关信息，打开<a href="/rankings/">机场推荐排行榜</a>或<a href="/compare/">机场对比总表</a>。</p>
+  </article>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</BaseLayout>

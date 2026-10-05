@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+---
+
+<BaseLayout
+  title="机场客户端选择器｜按设备和协议推荐 Clash、小火箭、v2rayN｜机场牛"
+  description="机场客户端选择器：选择你的设备（Windows、Mac、安卓、iOS、鸿蒙）和机场使用的协议，立刻得到 Clash Verge、Shadowrocket 小火箭、v2rayN、Mihomo、Sing-box 的推荐与对应教程，纯浏览器本地运行。"
+  keywords={['Clash Verge', '小火箭机场', 'v2rayN', '机场客户端', '客户端选择']}
+>
+  <Breadcrumbs items={[{ name: '在线工具', href: '/tools/' }, { name: '客户端选择器', href: '/tools/client-picker/' }]} />
+  <span class="section__eyebrow">PICK</span>
+  <h1>机场客户端选择器：先认设备，再看协议</h1>
+  <p class="lead">客户端不提供节点，只是连接工具；选哪个主要看你的设备，其次看机场订阅用的协议。选完下面两项，给你一份推荐和对应教程。</p>
+
+  <div class="card">
+    <form class="tool-form" onsubmit="return false">
+      <div class="tool-row">
+        <label>你的设备
+          <select id="platform">
+            <option value="windows">Windows 电脑</option>
+            <option value="mac">Mac 电脑</option>
+            <option value="android">安卓手机</option>
+            <option value="ios">iPhone / iPad</option>
+            <option value="harmony">华为鸿蒙</option>
+            <option value="linux">Linux</option>
+          </select>
+        </label>
+        <label>订阅用的协议
+          <select id="protocol">
+            <option value="any">不确定 / 机场没说</option>
+            <option value="vless">VLESS</option>
+            <option value="trojan">Trojan</option>
+            <option value="hy2">Hysteria2</option>
+            <option value="ss">Shadowsocks</option>
+          </select>
+        </label>
+      </div>
+    </form>
+  </div>
+
+  <h2>推荐结果</h2>
+  <div id="picked" class="entry-grid"></div>
+  <p class="muted">推荐基于客户端的通用能力，具体协议支持以客户端当前版本和官方说明为准；下载请只走官方渠道。</p>
+  <p>想看所有客户端对比，去<a href="/clients/">客户端大全</a>；导入订阅的步骤见<a href="/tutorials/">使用教程</a>。</p>
+</BaseLayout>
+
+<script is:inline>
+  (function () {
+    var C = {
+      verge: { name: 'Clash Verge Rev', href: '/clients/clash-verge/', text: 'Windows / Mac / Linux 上最常用的 Clash 系图形客户端，内核基于 Mihomo，导入订阅即用。' },
+      mihomo: { name: 'Mihomo Party', href: '/clients/mihomo-party/', text: '基于 Mihomo 内核的桌面客户端，对 Hysteria2 等新协议支持更积极。' },
+      v2rayn: { name: 'v2rayN', href: '/clients/v2rayn/', text: 'Windows 上老牌客户端，对 VLESS、Trojan 等 Xray 生态协议支持好。' },
+      sing: { name: 'Sing-box', href: '/clients/sing-box/', text: '跨平台通用内核，协议覆盖广，iOS 和安卓上也有官方客户端，配置相对偏技术。' },
+      rocket: { name: 'Shadowrocket（小火箭）', href: '/clients/shadowrocket/', text: 'iPhone / iPad 上最常用的付费客户端，需要海外区 Apple ID 才能下载。' },
+      android: { name: 'Clash 系 / Sing-box 安卓客户端', href: '/clients/android-jichang-jiaocheng/', text: '安卓上有多款基于 Mihomo 或 Sing-box 的客户端，按教程选官方渠道。' },
+    };
+    var P = {
+      windows: ['verge', 'v2rayn', 'mihomo', 'sing'],
+      mac: ['verge', 'mihomo', 'sing'],
+      android: ['android', 'sing'],
+      ios: ['rocket', 'sing'],
+      harmony: ['android', 'sing'],
+      linux: ['verge', 'mihomo', 'sing'],
+    };
+    var pf = document.getElementById('platform'), pr = document.getElementById('protocol'), out = document.getElementById('picked');
+    function render() {
+      var list = (P[pf.value] || []).slice();
+      if (pr.value === 'hy2') list.sort(function (a) { return a === 'mihomo' || a === 'sing' ? -1 : 1; });
+      if (pr.value === 'vless' && pf.value === 'windows') list.sort(function (a) { return a === 'v2rayn' ? -1 : 1; });
+      out.innerHTML = list.map(function (k, i) {
+        var c = C[k];
+        return '<a class="entry-card" href="' + c.href + '"><span class="entry-card__kicker">' + (i === 0 ? 'TOP PICK' : 'ALSO') + '</span><span class="entry-card__title">' + c.name + '</span><p class="entry-card__description">' + c.text + '</p><span class="entry-card__cta">看教程 →</span></a>';
+      }).join('');
+    }
+    pf.addEventListener('change', render); pr.addEventListener('change', render); render();
+  })();
+</script>
