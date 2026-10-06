@@ -16,11 +16,11 @@ export const siteConfig = {
   // 把"机场推荐、便宜机场、专线机场、梯子工具、Clash 机场、跑路预警"这些搜索意图
   // 各分配一个主战页面（见 docs/keyword-registry.md）。
   description:
-    '机场牛：2026 机场推荐排行榜，把机场和梯子按资料透明度从夯排到拉，便宜机场、专线机场、稳定机场一页看完。整理 IPLC/IEPL 线路、VLESS/Trojan/Hysteria2 协议与 Clash、小火箭、v2rayN 客户端资料，汇总优惠码、跑路预警和避坑指南，晚高峰与流媒体、ChatGPT 可用性只写查得到来源的内容。',
+    '机场牛：2026 机场推荐排行榜，按资料透明度把机场梯子从夯排到拉。便宜机场、专线机场、稳定机场、Clash 机场一页看完，整理 IPLC/IEPL 线路与 VLESS/Trojan 协议，另附优惠码、跑路预警和避坑指南。',
 
   defaultTitle: '机场牛｜2026 机场推荐排行榜，机场梯子从夯到拉一次看完',
   defaultDescription:
-    '机场牛：2026 机场推荐排行榜，把机场和梯子按资料透明度从夯排到拉，便宜机场、专线机场、稳定机场一页看完。整理 IPLC/IEPL 线路、VLESS/Trojan/Hysteria2 协议与 Clash、小火箭、v2rayN 客户端资料，汇总优惠码、跑路预警和避坑指南，晚高峰与流媒体、ChatGPT 可用性只写查得到来源的内容。',
+    '机场牛：2026 机场推荐排行榜，按资料透明度把机场梯子从夯排到拉。便宜机场、专线机场、稳定机场、Clash 机场一页看完，整理 IPLC/IEPL 线路与 VLESS/Trojan 协议，另附优惠码、跑路预警和避坑指南。',
 
   defaultOgImage: '/images/og/default.png',
 

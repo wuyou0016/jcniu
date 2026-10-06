@@ -75,7 +75,7 @@ function checkArticle(file) {
   for (const k of spec.secondaryKeywords) if (!sec.includes(k)) err(rel, `secondaryKeywords 缺少 ${k}`);
 
   const desc = fm.description ?? '';
-  if (desc.length < 100 || desc.length > 165) err(rel, `description 长度 ${desc.length}，应在 100–165 字`);
+  if (desc.length < 100 || desc.length > 155) err(rel, `description 长度 ${desc.length}，应在 100–155 字`);
   if (!desc.includes(spec.primaryKeyword)) err(rel, 'description 必须包含主关键词');
   const kwHit = [spec.primaryKeyword, ...spec.secondaryKeywords].filter((k) => desc.toLowerCase().includes(k.toLowerCase())).length;
   if (kwHit < 3) err(rel, `description 只命中 ${kwHit} 个关键词（主+次），至少 3 个`);

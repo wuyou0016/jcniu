@@ -46,7 +46,7 @@ for (const f of pages) {
   if (route !== '/' && title.length < 14) problems.push(`${route}: title 过短 ${title.length}`);
   if (!desc) problems.push(`${route}: 缺 description`);
   else {
-    if (desc.length > 170) problems.push(`${route}: description 过长 ${desc.length}`);
+    if (desc.length > 155) problems.push(`${route}: description 过长 ${desc.length}（Bing 上限约 160）`);
     if (desc.length < 60) problems.push(`${route}: description 过短 ${desc.length}`);
   }
   if (canonical !== `${BASE}${route}`) problems.push(`${route}: canonical 不符 ${canonical}`);
