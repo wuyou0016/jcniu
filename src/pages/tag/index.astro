@@ -17,7 +17,7 @@ const tags = SEO_TAGS.map((tag) => ({
 })).filter((entry) => entry.articleCount + entry.faqCount >= 2);
 ---
 
-<BaseLayout title={copy.title} description={copy.description} keywords={copy.keywords}>
+<BaseLayout title={copy.title} description={copy.description} robots={{ index: false, follow: true }} keywords={copy.keywords}>
   <Breadcrumbs items={[{ name: copy.breadcrumb, href: '/tag/' }]} />
 
   <h1>{copy.h1}</h1>

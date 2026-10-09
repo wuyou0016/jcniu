@@ -44,7 +44,7 @@ export const SEO_COPY: SeoCopy = {
     cardCta: (articleCount, faqCount) => `收录文章 ${articleCount} 篇，问答 ${faqCount} 条`,
   },
   tagPage: {
-    title: (name) => `${name}专题｜文章、问答与资料档案｜${brand}`,
+    title: (name) => `${name}专题｜相关文章、问答与资料档案汇总｜${brand}`,
     description: (name, intro) => {
       const text = `${brand}整理的${name}专题。${intro}`;
       return text.length > 140 ? `${text.slice(0, 138)}…` : text;

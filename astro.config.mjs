@@ -1,6 +1,33 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { INDEXABLE_TAGS } from './src/config/indexable-tags.mjs';
+
+
+// sitemap 的 lastmod 取内容 frontmatter 里的 updatedAt（文章、术语），其余页面用整站最近一次整体更新日；不使用构建时间。
+const SITE_REVISION = '2026-10-05';
+const root = path.dirname(fileURLToPath(import.meta.url));
+/** @type {Map<string, string>} */
+const lastmodByPath = new Map();
+const typeBase = { guide: '/guides/', client: '/clients/', knowledge: '/knowledge/', tutorial: '/tutorials/', troubleshooting: '/troubleshooting/', warning: '/warnings/' };
+/** @param {string} dir @param {(id: string, type?: string) => string | null} toPath */
+function collect(dir, toPath) {
+  if (!fs.existsSync(dir)) return;
+  for (const name of fs.readdirSync(dir)) {
+    if (!/\.mdx?$/.test(name)) continue;
+    const raw = fs.readFileSync(path.join(dir, name), 'utf8');
+    const fm = (raw.match(/^---\r?\n([\s\S]*?)\r?\n---/) || [])[1] || '';
+    const date = (fm.match(/^updatedAt:\s*"?(\d{4}-\d{2}-\d{2})/m) || [])[1];
+    const type = (fm.match(/^type:\s*"?(\w+)"?/m) || [])[1];
+    const p = toPath(name.replace(/\.mdx?$/, ''), type);
+    if (p && date) lastmodByPath.set(p, date);
+  }
+}
+collect(path.join(root, 'src/content/articles'), (id, type) => (type && typeBase[type] ? `${typeBase[type]}${id}/` : null));
+collect(path.join(root, 'src/content/glossary'), (id) => `/glossary/${id}/`);
 
 // Sitemap inclusion policy（见 JichangNiu Crawl / Indexability Foundation v1.0）：
 // - 排除 404 页面（不是可索引内容）
@@ -25,6 +52,14 @@ function isSitemapExcluded(pageUrl) {
   if (/\/page\/\d+\/?$/.test(url.pathname)) {
     return true;
   }
+  // 标签页：只有 INDEXABLE_TAGS 里的可索引（其余 noindex，不进 sitemap）；标签总览页也不进 sitemap。
+  if (url.pathname === '/tag/' || url.pathname === '/tag') {
+    return true;
+  }
+  const tagMatch = url.pathname.match(/^\/tag\/([^/]+)\/?$/);
+  if (tagMatch && !INDEXABLE_TAGS.includes(tagMatch[1])) {
+    return true;
+  }
   if (url.pathname === '/internal-stats' || url.pathname === '/internal-stats/') {
     return true;
   }
@@ -38,6 +73,10 @@ export default defineConfig({
   integrations: [
     sitemap({
       filter: (page) => !isSitemapExcluded(page),
+      serialize(item) {
+        item.lastmod = lastmodByPath.get(new URL(item.url).pathname) ?? SITE_REVISION;
+        return item;
+      },
     }),
   ],
 });

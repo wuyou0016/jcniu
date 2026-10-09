@@ -1,6 +1,6 @@
 ---
 type: guide
-title: 'AI开发环境网络怎么搭：Claude、Cursor、API 对机场的要求'
+title: 'AI 开发环境网络怎么搭：Claude 与 Cursor 对机场的要求'
 description: "AI开发环境网络和网页聊天不同：命令行、编辑器和 API 调用对出口、稳定性和分流的要求更高。本文讲清 Claude可用 的前提、Cursor网络问题怎么排查、API中转的风险，以及常见报错的排查顺序。"
 category: AI 与流媒体
 primaryKeyword: AI开发环境网络
