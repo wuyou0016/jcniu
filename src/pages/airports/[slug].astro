@@ -49,8 +49,8 @@ const clients = v.clientSupport ?? [];
 // 标题：问句公式（"{品牌}机场怎么样？年份 线路词 机场推荐与资料核对"），线路词只取资料里真实存在的字段。
 const lineWord = routes.length > 0 ? `${routes[0]!.replace(/（.*$/, '')}${/专线/.test(routes[0]!) ? '' : '专线'}` : protocols.length > 0 ? `${protocols[0]}协议` : '';
 const title = lineWord
-  ? `${p.name}机场怎么样？2026 ${lineWord}机场推荐与价格资料核对｜机场牛`
-  : `${p.name}机场怎么样？2026 官网资料核对、价格与是否靠谱｜机场牛`;
+  ? `${p.name}机场怎么样？${lineWord}机场价格与资料核对｜机场牛`
+  : `${p.name}机场怎么样？官网资料核对、价格与风险提示｜机场牛`;
 
 const priceBit = plans[0] ? `${plans[0].name}档${plans[0].price}${plans[0].quota ? `、${plans[0].quota}` : ''}` : '价格资料暂缺';
 const description = `${p.name}机场评测：${priceBit}${routes.length ? `，线路记录为${routes.join('、')}` : ''}${protocols.length ? `，协议${protocols.join('/')}` : ''}。机场牛把它排在夯到拉榜第 ${row.rank} 名（${tier.label}档），逐条标注价格、线路与来源类型，不替商家编造速度和解锁结论。`;

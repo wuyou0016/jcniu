@@ -16,6 +16,7 @@ import {
   type SeoTag,
 } from '../../data/seo/seo-tags';
 import { SEO_COPY } from '../../data/seo/site-copy';
+import { INDEXABLE_TAGS } from '../../config/indexable-tags.mjs';
 
 export async function getStaticPaths() {
   const articles = await getCollection('articles', ({ id }) => !isDemoEntry(id));
@@ -57,7 +58,7 @@ const otherTags = SEO_TAGS.filter(
 ).slice(0, 10);
 ---
 
-<BaseLayout title={title} description={description} keywords={[tag.name, '机场推荐', '机场']}>
+<BaseLayout title={title} description={description} robots={{ index: INDEXABLE_TAGS.includes(tag.slug), follow: true }} keywords={[tag.name, '机场推荐', '机场']}>
   <Breadcrumbs
     items={[
       { name: SEO_COPY.tagIndex.breadcrumb, href: '/tag/' },

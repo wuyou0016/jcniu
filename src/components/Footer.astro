@@ -37,6 +37,9 @@ const friendLinks = [
 ];
 
 const currentYear = new Date().getFullYear();
+
+// 链接网络整改（2026-10-09）：站群友情链接只放首页与关于页，且一律 nofollow，不做全站页脚外链。
+const showFriends = ['/', '/about/'].includes(Astro.url.pathname);
 ---
 
 <footer class="site-footer">
@@ -62,12 +65,16 @@ const currentYear = new Date().getFullYear();
         {topicLinks.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
       </ul>
     </div>
-    <div>
-      <h2>友情链接</h2>
-      <ul>
-        {friendLinks.map((item) => <li><a href={item.href} target="_blank" rel="noopener">{item.label}</a></li>)}
-      </ul>
-    </div>
+    {
+      showFriends && (
+        <div>
+          <h2>友情链接</h2>
+          <ul>
+            {friendLinks.map((item) => <li><a href={item.href} target="_blank" rel="noopener nofollow">{item.label}</a></li>)}
+          </ul>
+        </div>
+      )
+    }
   </div>
   <div class="container site-footer__note">
     <h2>网站说明</h2>

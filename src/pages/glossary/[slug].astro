@@ -28,7 +28,9 @@ const relatedArticles = (data.relatedArticles ?? [])
   .map((id) => articles.find((entry) => entry.id === id))
   .filter((entry): entry is CollectionEntry<'articles'> => Boolean(entry));
 
-const title = `${data.term}是什么？${data.definition.slice(0, 22)}｜机场牛术语库`;
+// 标题用不含括号英文全称的短名，不再截取定义的前 22 个字（会截断成半句）。
+const shortName = data.term.replace(/（[^）]*）/g, '').trim();
+const title = `${shortName}是什么？含义、原理与常见用法｜机场牛术语库`;
 const description = `${data.term}是什么意思：${data.definition}${data.extendedExplanation ? data.extendedExplanation.slice(0, 60) : ''}`.slice(0, 158);
 const jsonLd = {
   '@context': 'https://schema.org',

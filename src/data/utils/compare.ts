@@ -1,8 +1,8 @@
 import type { BoardRow } from './board';
 import { cheapestMonthly, cleanLabel, hasMonthlyPlan, planFacts } from './provider-facts';
 
-// 两两对比页覆盖榜单前 N 名之间的所有组合（N=8 → 28 对）。
-export const PAIR_COUNT_TOP = 8;
+// 两两对比页覆盖榜单前 N 名之间的所有组合（N=4 → 6 对；2026-10 由 8 名 28 对收敛，避免新域名放出大量高度相似的配对页）。
+export const PAIR_COUNT_TOP = 4;
 
 export function pairSlug(a: string, b: string): string {
   return `${a}-vs-${b}`;
