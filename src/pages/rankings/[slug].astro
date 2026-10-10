@@ -291,9 +291,144 @@ function ratio(row: BoardRow): string {
   if (!best || gb === null) return '—';
   return (gb / best.monthly).toFixed(1);
 }
+
+// ---- 榜单读数：全部由上面筛出的 rows 现算，不写死数字，数据变了读数自动跟着变 ----
+const snapshot = board.snapshotAt.toISOString().slice(0, 10);
+const PAGE_UPDATED = '2026-10-10';
+const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+const median = (xs: number[]) => {
+  const s = [...xs].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length === 0 ? 0 : s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2;
+};
+const link = (row: BoardRow) => `<a href="/airports/${row.provider.data.slug}/">${row.provider.data.name}</a>`;
+const linkList = (list: BoardRow[]) => (list.length ? list.map(link).join('、') : '—');
+
+interface Readout {
+  heading: string;
+  facts: string[];
+  table?: { head: string[]; rows: string[][] };
+}
+
+function buildReadout(): Readout | null {
+  if (rows.length === 0) return null;
+  if (kind === 'cheap') {
+    const priced = rows.map((row) => ({ row, best: bestPlan(row)! }));
+    const monthlies = priced.map((x) => x.best.monthly);
+    const yearly = priced.filter((x) => x.best.plan.cycle === '按年付费');
+    const bands: [string, (m: number) => boolean][] = [
+      ['月均价 ¥10 以内', (m) => m <= 10],
+      ['¥10–20', (m) => m > 10 && m <= 20],
+      ['¥20 以上', (m) => m > 20],
+    ];
+    return {
+      heading: '这张榜读出的几个事实',
+      facts: [
+        `资料里能读出月均价的品牌共 ${rows.length} 家：最低是 ${link(priced[0]!.row)} 的 ¥${fmt(Math.min(...monthlies))}/月（${priced[0]!.best.plan.cycle || '周期未注明'}），中位数约 ¥${fmt(median(monthlies))}/月，最高 ¥${fmt(Math.max(...monthlies))}/月。`,
+        `其中 ${yearly.length} 家的“最低价”来自年付折算，需要一次付一整年，不能按月直接买到；想先按月试用，要看后面的《<a href="/rankings/monthly/">月付机场推荐</a>》。`,
+        `价格只是门槛之一：榜单只比较资料里写明的价格、流量和周期，不含晚高峰速度、丢包等没有本站测试记录的指标。`,
+      ],
+      table: {
+        head: ['价格带', '家数', '品牌'],
+        rows: bands.map(([label, test]) => {
+          const hit = priced.filter((x) => test(x.best.monthly)).map((x) => x.row);
+          return [label, String(hit.length), linkList(hit)];
+        }),
+      },
+    };
+  }
+  if (kind === 'best-value') {
+    const withGb = rows
+      .map((row) => ({ row, best: bestPlan(row)!, gb: trafficGb(bestPlan(row)!.plan.quota) }))
+      .filter((x): x is { row: BoardRow; best: NonNullable<ReturnType<typeof bestPlan>>; gb: number } => x.gb !== null);
+    const scored = withGb.map((x) => ({ ...x, per: x.gb / x.best.monthly })).sort((a, b) => b.per - a.per);
+    const tiers = [50, 100, 200];
+    const pick = tiers.map((need) => {
+      const ok = withGb.filter((x) => x.gb >= need).sort((a, b) => a.best.monthly - b.best.monthly)[0];
+      return ok ? [`每月至少 ${need}GB`, link(ok.row), `¥${fmt(ok.best.monthly)}/月`, `${fmt(ok.gb)}GB`] : [`每月至少 ${need}GB`, '资料里没有', '—', '—'];
+    });
+    return {
+      heading: '这张榜读出的几个事实',
+      facts: [
+        `${rows.length} 家有月均价的品牌里，流量额度写成 GB 数、能算出“每元流量”的有 ${scored.length} 家，数值从 ${fmt(scored.at(-1)?.per ?? 0)} 到 ${fmt(scored[0]?.per ?? 0)} GB/元。`,
+        scored.length >= 3
+          ? `每元流量最高的三家是 ${scored.slice(0, 3).map((x) => `${link(x.row)}（${fmt(x.per)}）`).join('、')}；注意这些数值都按各家“最便宜的一档”计算，与你实际要买的档位可能不同。`
+          : `能算出每元流量的品牌不足三家，数值只作粗略参考。`,
+        `下表换一个角度：先定每月要用多少流量，再看资料里满足这个额度的套餐里谁的月均价最低。`,
+      ],
+      table: { head: ['你每月的用量', '月均价最低的品牌', '月均价', '该档流量'], rows: pick },
+    };
+  }
+  if (kind === 'dedicated-line') {
+    const has = (row: BoardRow, re: RegExp) => (row.provider.data.vendor.routes ?? []).some((r) => re.test(r));
+    const iplc = rows.filter((r) => has(r, /IPLC/i));
+    const iepl = rows.filter((r) => has(r, /IEPL/i));
+    const corp = rows.filter((r) => has(r, /企业级|内网专线/));
+    const thirdOnly = rows.filter((r) => (r.provider.data.vendor.routes ?? []).every((x) => /第三方/.test(x) && !/官网标注/.test(x)));
+    const count = new Map<string, number>();
+    for (const row of rows) for (const region of row.provider.data.vendor.regions ?? []) count.set(region, (count.get(region) ?? 0) + 1);
+    const topRegions = [...count.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    return {
+      heading: '这张榜读出的几个事实',
+      facts: [
+        `资料里标注了专线线路的品牌共 ${rows.length} 家：标 IPLC 的 ${iplc.length} 家，标 IEPL 的 ${iepl.length} 家，标“企业级内网专线”的 ${corp.length} 家（同一品牌可能同时标多种）。`,
+        `线路信息只有第三方资料转述、没有官网标注的有 ${thirdOnly.length} 家——这类品牌的“专线”二字，下单前最好再到官网或客服处确认一次。`,
+        topRegions.length ? `这些品牌里出现最多的节点地区是 ${topRegions.map(([r, n]) => `${r}（${n} 家）`).join('、')}。` : '节点地区资料不足，未统计。',
+      ],
+      table: {
+        head: ['线路标注', '家数', '品牌'],
+        rows: [
+          ['IPLC', String(iplc.length), linkList(iplc)],
+          ['IEPL', String(iepl.length), linkList(iepl)],
+          ['企业级内网专线', String(corp.length), linkList(corp)],
+        ],
+      },
+    };
+  }
+  if (kind === 'monthly') {
+    const plans = rows.flatMap((row) =>
+      planFacts(row.provider)
+        .filter((p) => p.cycle === '按月付费' && p.monthly !== null)
+        .map((p) => ({ row, p })),
+    );
+    const prices = plans.map((x) => x.p.monthly!);
+    const lowest = [...plans].sort((a, b) => a.p.monthly! - b.p.monthly!)[0];
+    const entryYearly = rows.filter((row) => bestPlan(row)?.plan.cycle === '按年付费');
+    return {
+      heading: '这张榜读出的几个事实',
+      facts: [
+        `资料里明确写了“按月付费”套餐的品牌共 ${rows.length} 家，共 ${plans.length} 个能读出月价的月付套餐${prices.length ? `，月价从 ¥${fmt(Math.min(...prices))} 到 ¥${fmt(Math.max(...prices))}，中位数约 ¥${fmt(median(prices))}` : ''}。`,
+        lowest ? `月付里价格最低的是 ${link(lowest.row)} 的“${lowest.p.name}”档（${lowest.p.price}）。` : '资料里没有可比较的月付价格。',
+        `有 ${entryYearly.length} 家品牌最便宜的入门档是年付，想月付只能上一档——所以“便宜榜”里的最低价和这里的月付价不是同一个数字，别直接对比。`,
+      ],
+    };
+  }
+  // stable
+  const widest = [...rows].sort((a, b) => (b.provider.data.vendor.regions ?? []).length - (a.provider.data.vendor.regions ?? []).length)[0]!;
+  const widestN = (widest.provider.data.vendor.regions ?? []).length;
+  return {
+    heading: '这张榜读出的几个事实',
+    facts: [
+      `满足“专线线路加四个以上节点地区”这个资料基础的品牌共 ${rows.length} 家，资料里节点地区最多的是 ${link(widest)}（${widestN} 个）。`,
+      `达到机场牛稳定性榜单门槛（同一品牌至少 2 条本站测试记录、时间跨度不少于 7 天）的品牌目前为 0 家，所以本页不排“最稳定”的名次，只公布资料基础。`,
+      `想自己验证稳不稳，可以用《<a href="/tools/airport-checklist/">买前自检清单</a>》在晚高峰连测几天，再对照表里的线路与地区资料。`,
+    ],
+  };
+}
+const readout = buildReadout();
+
+const pageJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: config.h1,
+  url: resolveCanonicalUrl(`/rankings/${kind}/`),
+  inLanguage: 'zh-CN',
+  dateModified: PAGE_UPDATED,
+  isPartOf: { '@type': 'WebSite', name: '机场牛', url: resolveCanonicalUrl('/') },
+};
 ---
 
-<BaseLayout title={config.title} description={config.description} keywords={config.keywords}>
+<BaseLayout title={config.title} description={config.description} keywords={config.keywords} modifiedTime={PAGE_UPDATED}>
   <Breadcrumbs
     items={[
       { name: '机场推荐排行榜', href: '/rankings/' },
@@ -302,6 +437,11 @@ function ratio(row: BoardRow): string {
   />
   <span class="section__eyebrow">RANKINGS · {kind.toUpperCase()}</span>
   <h1>{config.h1}</h1>
+  <p class="article-meta">
+    <span>页面更新 <time datetime={PAGE_UPDATED}>{PAGE_UPDATED}</time></span>
+    <span>资料快照 <time datetime={snapshot}>{snapshot}</time></span>
+    <span>价格以官网结算页为准</span>
+  </p>
   <p class="lead">{config.lead}</p>
 
   {
@@ -466,6 +606,37 @@ function ratio(row: BoardRow): string {
   }
 
   {
+    readout && (
+      <>
+        <h2>{readout.heading}</h2>
+        <div class="callout callout--ok">
+          <ul>
+            {readout.facts.map((f) => <li set:html={f} />)}
+          </ul>
+        </div>
+        {readout.table && (
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  {readout.table.head.map((h) => <th>{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {readout.table.rows.map((r) => (
+                  <tr>
+                    {r.map((c) => <td set:html={c} />)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </>
+    )
+  }
+
+  {
     config.outro.map((block) => (
       <>
         <h2>{block.heading}</h2>
@@ -482,4 +653,5 @@ function ratio(row: BoardRow): string {
   <FaqBlock heading={`${config.breadcrumb}常见问题`} items={config.faqs} />
 
   {itemListJsonLd && <script type="application/ld+json" set:html={JSON.stringify(itemListJsonLd)} />}
+  <script type="application/ld+json" set:html={JSON.stringify(pageJsonLd)} />
 </BaseLayout>
