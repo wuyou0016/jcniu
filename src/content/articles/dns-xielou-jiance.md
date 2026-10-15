@@ -7,9 +7,9 @@ primaryKeyword: DNS泄漏检测
 secondaryKeywords: [DNS泄漏, DNS设置, IP泄漏检测]
 difficulty: intermediate
 publishedAt: 2026-10-05
-updatedAt: 2026-10-05
+updatedAt: 2026-10-15
 rankBlock: none
-relatedTopics: [tun-mode-setup, mihomo-fenliu-guize, jichang-anquan-yinsi]
+relatedTopics: [tun-mode-setup, mihomo-fenliu-guize, jichang-anquan-yinsi, fake-ip-redir-host]
 faqs:
   - q: 开了代理为什么还会发生 DNS 泄漏？
     a: 因为域名解析和上网流量是两条独立的路径。代理接管了数据连接，但软件仍可能先向系统里设置的本地 DNS 问一遍地址，查询就发给了本地运营商。规则里按 IP 匹配的条目、不遵守系统代理的软件、浏览器自带的安全 DNS，都可能造成这种情况。

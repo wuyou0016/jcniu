@@ -7,9 +7,9 @@ primaryKeyword: 机场年付风险
 secondaryKeywords: [年付风险, 机场退款, 机场跑路]
 difficulty: beginner
 publishedAt: 2026-10-05
-updatedAt: 2026-10-05
+updatedAt: 2026-10-15
 rankBlock: monthly
-relatedTopics: [jichang-nianfu-yuefu, paolu-yujing-xinhao-xiangjie, paolu-hou-zenme-zhisun]
+relatedTopics: [jichang-nianfu-yuefu, paolu-yujing-xinhao-xiangjie, paolu-hou-zenme-zhisun, zidong-xufei-zhifu]
 faqs:
   - q: "机场年付到底有哪些风险？"
     a: "主要有四类：一次性付出整年费用带来的沉没成本；服务商失联或经营出问题；线路和节点在年付期间变差而你没有议价权；退款、停售、续费条款对你不利。年付省的是月均价，担的是这些集中在一次付款上的风险。"

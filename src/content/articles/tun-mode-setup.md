@@ -7,9 +7,9 @@ primaryKeyword: TUN模式
 secondaryKeywords: [TUN模式设置, 虚拟网卡, 系统代理]
 difficulty: intermediate
 publishedAt: 2026-10-05
-updatedAt: 2026-10-05
+updatedAt: 2026-10-15
 rankBlock: none
-relatedTopics: [clash-verge-daoru-dingyue, dns-xielou-jiance, clash-xitong-daili-wuxiao]
+relatedTopics: [clash-verge-daoru-dingyue, dns-xielou-jiance, clash-xitong-daili-wuxiao, youxi-jichang-xuanze, luyouqi-zhuji-jichang]
 faqs:
   - q: 开了 TUN 还需要开系统代理吗？
     a: 通常不需要。TUN 在更底层接管流量，覆盖面比系统代理更广。两个同时开不算错，但出问题时不容易判断是哪一层的原因，建议排错时先只留一个。日常浏览网页，只开系统代理就够用，不必为了开而开。

@@ -7,9 +7,9 @@ primaryKeyword: 机场订阅链接安全
 secondaryKeywords: [订阅链接泄露, 订阅链接, 订阅重置]
 difficulty: beginner
 publishedAt: 2026-10-05
-updatedAt: 2026-10-05
+updatedAt: 2026-10-15
 rankBlock: none
-relatedTopics: [jichang-anquan-yinsi, dingyue-gengxin-shibai, subscription-link, dingyue-zhuanhuan]
+relatedTopics: [jichang-anquan-yinsi, dingyue-gengxin-shibai, subscription-link, dingyue-zhuanhuan, shebei-shu-xianzhi, dingyue-beifeng-yuanyin]
 faqs:
   - q: "订阅链接泄露了，我的账号密码会被盗吗？"
     a: "一般不会直接泄露登录密码。订阅链接主要让别人拿到你的节点列表，进而使用你的套餐流量、占用设备数，后台是否能被登录取决于面板的设计。出于谨慎，建议在重置订阅链接的同时修改面板登录密码，并查看登录记录和在线设备。"

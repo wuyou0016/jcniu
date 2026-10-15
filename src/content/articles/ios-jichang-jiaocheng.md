@@ -7,9 +7,9 @@ primaryKeyword: iOS机场教程
 secondaryKeywords: [iPhone机场, iOS客户端, Shadowrocket]
 difficulty: beginner
 publishedAt: 2026-10-05
-updatedAt: 2026-10-05
+updatedAt: 2026-10-15
 rankBlock: none
-relatedTopics: [shadowrocket, shadowrocket-daoru-dingyue, sing-box]
+relatedTopics: [shadowrocket, shadowrocket-daoru-dingyue, sing-box, xiaohuojian-tidai]
 faqs:
   - q: iPhone 上用机场，要先买客户端吗？
     a: 通常要。iOS 上常见的几款代理客户端多数是付费应用，是否收费、价格如何、在你所在地区能否下载，都以 App Store 页面为准。先确认你的订阅格式适合哪款，再决定买哪个，别一口气买好几个。机场牛不写价格，因为随地区和时间变化。

@@ -7,9 +7,9 @@ primaryKeyword: 订阅更新失败
 secondaryKeywords: [订阅更新失败, 订阅无法更新, 订阅链接无效]
 difficulty: beginner
 publishedAt: 2026-10-05
-updatedAt: 2026-10-05
+updatedAt: 2026-10-15
 rankBlock: none
-relatedTopics: [dingyue-lianjie-anquan, jiedian-quanbu-chaoshi, dingyue-zhuanhuan]
+relatedTopics: [dingyue-lianjie-anquan, jiedian-quanbu-chaoshi, dingyue-zhuanhuan, jichang-yonghu-mianban]
 symptom: 点击更新订阅后提示失败、超时、下载错误，或者更新成功但节点列表是空的
 faqs:
   - q: 订阅链接重置后，旧链接还能用吗？

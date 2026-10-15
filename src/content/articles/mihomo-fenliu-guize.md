@@ -7,9 +7,9 @@ primaryKeyword: 分流规则
 secondaryKeywords: [规则集, Clash分流, 规则模式]
 difficulty: intermediate
 publishedAt: 2026-10-05
-updatedAt: 2026-10-05
+updatedAt: 2026-10-15
 rankBlock: none
-relatedTopics: [clash-verge-daoru-dingyue, tun-mode-setup, claude-ai-gongju-jichang]
+relatedTopics: [clash-verge-daoru-dingyue, tun-mode-setup, claude-ai-gongju-jichang, clash-fugai-jiaoben, fake-ip-redir-host]
 faqs:
   - q: 规则模式和全局模式有什么区别？
     a: 规则模式按规则逐条判断每条连接的去向，国内站直连、国外站走代理，日常使用选它。全局模式不看规则，所有流量都走你选定的节点，适合临时排错或对照。长期开全局，国内流量也会绕出去，既浪费流量又可能变慢。

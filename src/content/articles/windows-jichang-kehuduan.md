@@ -7,9 +7,9 @@ primaryKeyword: Windows客户端教程
 secondaryKeywords: [Windows机场, Clash Verge, v2rayN]
 difficulty: beginner
 publishedAt: 2026-10-05
-updatedAt: 2026-10-05
+updatedAt: 2026-10-15
 rankBlock: none
-relatedTopics: [clash-verge, v2rayn, mihomo-party, tun-mode-setup]
+relatedTopics: [clash-verge, v2rayn, mihomo-party, tun-mode-setup, clash-for-windows-tidai]
 faqs:
   - q: Windows 用机场，新手装哪个客户端比较合适？
     a: 先看订阅格式。订阅是 Clash 或 Mihomo 能读的格式，新手可以从 Clash Verge Rev 起步，图形界面完整，相关教程也多；订阅是通用格式、习惯 V2Ray 体系的，可以选 v2rayN。想自己写配置的再看 sing-box。选定一个跑通，不要几个同时开。

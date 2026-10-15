@@ -7,9 +7,9 @@ primaryKeyword: 机场流量倍率
 secondaryKeywords: [流量倍率, 倍率节点, 机场流量]
 difficulty: beginner
 publishedAt: 2026-10-05
-updatedAt: 2026-10-05
+updatedAt: 2026-10-15
 rankBlock: none
-relatedTopics: [xingjiabi-jichang-zenme-pan, bu-xiansu-jichang-shi-zhende-ma, traffic-multiplier, iplc-iepl-zhongzhuan-quebie]
+relatedTopics: [xingjiabi-jichang-zenme-pan, bu-xiansu-jichang-shi-zhende-ma, traffic-multiplier, iplc-iepl-zhongzhuan-quebie, liuliang-yongwan]
 faqs:
   - q: "倍率 0.5 的节点，是不是用得越多越划算？"
     a: "倍率低意味着同样的实际用量扣得少，对套餐流量更友好，但“划算”还要看节点的速度、线路和用途是否适合你。低倍率节点可能有地区、用途或带宽方面的限制，质量要单独核对，不要只因为倍率低就把所有流量都放上去。"
