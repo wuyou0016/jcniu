@@ -7,7 +7,7 @@ primaryKeyword: 机场流量倍率
 secondaryKeywords: [流量倍率, 倍率节点, 机场流量]
 difficulty: beginner
 publishedAt: 2026-10-05
-updatedAt: 2026-10-15
+updatedAt: 2026-10-19
 rankBlock: none
 relatedTopics: [xingjiabi-jichang-zenme-pan, bu-xiansu-jichang-shi-zhende-ma, traffic-multiplier, iplc-iepl-zhongzhuan-quebie, liuliang-yongwan]
 faqs:
@@ -59,6 +59,11 @@ faqs:
 - **倍率是服务商的计费规则，不是协议的一部分。** 客户端本身不会替你“算倍率”，它只负责转发流量，扣多少由服务商的后台决定。
 
 术语速查见 [流量倍率是什么](/glossary/traffic-multiplier/)。
+
+<figure class="article-figure">
+<img src="/images/diagrams/liuliang-beilv-gongshi.svg" alt="流量倍率公式：扣费流量等于实际使用流量乘以倍率，示例为倍率 0.5、1、2 时实际用 1 GB 分别扣 0.5 GB、1 GB、2 GB" width="960" height="304" loading="lazy" decoding="async">
+<figcaption>图：流量倍率的换算公式与示例（示意图）</figcaption>
+</figure>
 
 ## 倍率节点为什么存在：成本差异与引导分流
 

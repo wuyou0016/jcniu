@@ -2141,3 +2141,21 @@ tbody tr:hover td {
     font-size: 0.7rem;
   }
 }
+
+/* 文章内原创示意图（2026-10-19）：宽度不超过正文，黑线硬边框，与全站纸张风格一致 */
+.article-figure {
+  margin: 1.5rem 0;
+}
+.article-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+}
+.article-figure figcaption {
+  margin-top: 0.5rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}

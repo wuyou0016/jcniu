@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 316" width="960" height="316" role="img" aria-label="节点订阅协议线路的关系：订阅是一条网址，里面装着很多节点；每个节点用某种协议通信，经某种线路到达出口"><title>节点订阅协议线路的关系：订阅是一条网址，里面装着很多节点；每个节点用某种协议通信，经某种线路到达出口</title><style>
+  svg{--bg:#fbf6ea;--card:#fffdf6;--line:#17120d;--ink:#17120d;--sub:#5f5647;--acc:#b42d0c;--accs:#ffe1d8;--warn:#b42d0c;}
+  @media (prefers-color-scheme: dark){svg{--bg:#12100d;--card:#1c1915;--line:#f6f0e2;--ink:#f6f0e2;--sub:#b3a995;--acc:#ff8a5c;--accs:#3a2418;--warn:#ff8a5c;}}
+  text{font-family:-apple-system, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Hiragino Sans GB', sans-serif;fill:var(--ink)}
+  .bg{fill:var(--bg)}
+  .card{fill:var(--card);stroke:var(--line);stroke-width:2}
+  .accbox{fill:var(--accs);stroke:var(--acc);stroke-width:2}
+  .ttl{font-size:20px;font-weight:700}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15px}
+  .s{font-size:13.5px;fill:var(--sub)}
+  .acc{fill:var(--acc)}
+  .warn{fill:var(--warn)}
+  .ln{stroke:var(--acc);stroke-width:2.2;fill:none}
+  .lnl{stroke:var(--line);stroke-width:2;fill:none}
+  .num{font-size:15px;font-weight:700;fill:var(--acc)}
+  </style><rect class="bg" width="960" height="316"/><text class="ttl" x="34" y="44">节点、订阅、协议、线路：它们是什么关系</text><rect class="accbox" x="34" y="70" width="430" height="184" rx="0" /><text class="h" x="52" y="98">订阅：一条网址，装着很多节点</text><rect class="card" x="54" y="120" width="118" height="110" rx="0" /><text class="b" x="113" y="152" text-anchor="middle">节点 1</text><text class="s" x="113" y="180" text-anchor="middle">一份连接配置</text><text class="s" x="113" y="199" text-anchor="middle">一台或一组服务器</text><rect class="card" x="188" y="120" width="118" height="110" rx="0" /><text class="b" x="247" y="152" text-anchor="middle">节点 2</text><text class="s" x="247" y="180" text-anchor="middle">一份连接配置</text><text class="s" x="247" y="199" text-anchor="middle">一台或一组服务器</text><rect class="card" x="322" y="120" width="118" height="110" rx="0" /><text class="b" x="381" y="152" text-anchor="middle">节点 3</text><text class="s" x="381" y="180" text-anchor="middle">一份连接配置</text><text class="s" x="381" y="199" text-anchor="middle">一台或一组服务器</text><path class="ln" d="M472 162 L522 162"/><path class="ln" d="M514.1017569429866 157.68517015256216 L522 162 L514.1017569429866 166.31482984743784"/><rect class="card" x="530" y="108" width="112" height="120" rx="0" /><text class="h" x="586" y="140" text-anchor="middle">协议</text><text class="s" x="586" y="168" text-anchor="middle">客户端和节点之间</text><text class="s" x="586" y="187" text-anchor="middle">通信的约定</text><path class="ln" d="M646 168 L658 168"/><path class="ln" d="M650.1017569429866 163.68517015256216 L658 168 L650.1017569429866 172.31482984743784"/><rect class="card" x="662" y="108" width="112" height="120" rx="0" /><text class="h" x="718" y="140" text-anchor="middle">线路</text><text class="s" x="718" y="168" text-anchor="middle">流量从入口到</text><text class="s" x="718" y="187" text-anchor="middle">落地走的路径</text><path class="ln" d="M778 168 L790 168"/><path class="ln" d="M782.1017569429866 163.68517015256216 L790 168 L782.1017569429866 172.31482984743784"/><rect class="card" x="794" y="108" width="112" height="120" rx="0" /><text class="h" x="850" y="140" text-anchor="middle">出口</text><text class="s" x="850" y="168" text-anchor="middle">最终访问网站时</text><text class="s" x="850" y="187" text-anchor="middle">使用的地区与 IP</text><text class="s" x="34" y="288">一句话：订阅里装着很多节点，每个节点用某种协议通信，并经由某种线路到达出口。节点数量不等于质量。</text></svg>

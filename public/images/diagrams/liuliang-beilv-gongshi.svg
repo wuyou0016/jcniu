@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 304" width="960" height="304" role="img" aria-label="流量倍率公式：扣费流量等于实际使用流量乘以倍率，示例为倍率 0.5、1、2 时实际用 1 GB 分别扣 0.5 GB、1 GB、2 GB"><title>流量倍率公式：扣费流量等于实际使用流量乘以倍率，示例为倍率 0.5、1、2 时实际用 1 GB 分别扣 0.5 GB、1 GB、2 GB</title><style>
+  svg{--bg:#fbf6ea;--card:#fffdf6;--line:#17120d;--ink:#17120d;--sub:#5f5647;--acc:#b42d0c;--accs:#ffe1d8;--warn:#b42d0c;}
+  @media (prefers-color-scheme: dark){svg{--bg:#12100d;--card:#1c1915;--line:#f6f0e2;--ink:#f6f0e2;--sub:#b3a995;--acc:#ff8a5c;--accs:#3a2418;--warn:#ff8a5c;}}
+  text{font-family:-apple-system, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Hiragino Sans GB', sans-serif;fill:var(--ink)}
+  .bg{fill:var(--bg)}
+  .card{fill:var(--card);stroke:var(--line);stroke-width:2}
+  .accbox{fill:var(--accs);stroke:var(--acc);stroke-width:2}
+  .ttl{font-size:20px;font-weight:700}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15px}
+  .s{font-size:13.5px;fill:var(--sub)}
+  .acc{fill:var(--acc)}
+  .warn{fill:var(--warn)}
+  .ln{stroke:var(--acc);stroke-width:2.2;fill:none}
+  .lnl{stroke:var(--line);stroke-width:2;fill:none}
+  .num{font-size:15px;font-weight:700;fill:var(--acc)}
+  </style><rect class="bg" width="960" height="304"/><text class="ttl" x="34" y="44">流量倍率怎么算：一条公式</text><rect class="accbox" x="34" y="70" width="892" height="84" rx="0" /><text class="h" x="480" y="104" text-anchor="middle" style="font-size:24px">扣费流量 = 实际使用流量 × 倍率</text><text class="s" x="480" y="134" text-anchor="middle">倍率写在节点名称、公告或面板里；同一份套餐，倍率越高，额度消耗得越快</text><rect class="card" x="34" y="176" width="288" height="100" rx="0" /><text class="h" x="178" y="206" text-anchor="middle">倍率 0.5</text><text class="b" x="178" y="238" text-anchor="middle">实际用 1 GB  →  扣 <tspan class="acc" font-weight="700">0.5 GB</tspan></text><text class="s" x="178" y="262" text-anchor="middle">示例</text><rect class="card" x="338" y="176" width="288" height="100" rx="0" /><text class="h" x="482" y="206" text-anchor="middle">倍率 1</text><text class="b" x="482" y="238" text-anchor="middle">实际用 1 GB  →  扣 <tspan class="acc" font-weight="700">1 GB</tspan></text><text class="s" x="482" y="262" text-anchor="middle">示例</text><rect class="card" x="642" y="176" width="288" height="100" rx="0" /><text class="h" x="786" y="206" text-anchor="middle">倍率 2</text><text class="b" x="786" y="238" text-anchor="middle">实际用 1 GB  →  扣 <tspan class="acc" font-weight="700">2 GB</tspan></text><text class="s" x="786" y="262" text-anchor="middle">示例</text></svg>

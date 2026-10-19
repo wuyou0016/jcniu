@@ -7,7 +7,7 @@ primaryKeyword: 机场订阅链接安全
 secondaryKeywords: [订阅链接泄露, 订阅链接, 订阅重置]
 difficulty: beginner
 publishedAt: 2026-10-05
-updatedAt: 2026-10-15
+updatedAt: 2026-10-19
 rankBlock: none
 relatedTopics: [jichang-anquan-yinsi, dingyue-gengxin-shibai, subscription-link, dingyue-zhuanhuan, shebei-shu-xianzhi, dingyue-beifeng-yuanyin]
 faqs:
@@ -71,6 +71,11 @@ faqs:
 4. **所有设备换上新链接。** 在每台设备的客户端里替换订阅并更新，旧的条目删除，步骤参考 [Clash Verge导入订阅](/tutorials/clash-verge-daoru-dingyue/)、[小火箭导入订阅](/tutorials/shadowrocket-daoru-dingyue/)、[v2rayN导入订阅](/tutorials/v2rayn-daoru-dingyue/)。
 5. **加固账号。** 修改面板登录密码，开启二次验证（如果有），查看登录记录和在线设备。
 6. **异常消耗，找客服。** 说明时间点和用量，截图里别露出新旧链接。是否补偿，以服务商规则为准，不要预设一定有。
+
+<figure class="article-figure">
+<img src="/images/diagrams/dingyue-xielou-liubu.svg" alt="订阅链接泄露后的六步处理：先止损、后台重置订阅、确认旧链接失效、所有设备换新链接、加固账号、异常消耗找客服" width="960" height="356" loading="lazy" decoding="async">
+<figcaption>图：订阅链接泄露后的 6 步处理（流程图）</figcaption>
+</figure>
 
 两点说明：
 

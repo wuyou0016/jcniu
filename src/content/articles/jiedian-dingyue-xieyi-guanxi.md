@@ -7,7 +7,7 @@ primaryKeyword: 机场节点是什么
 secondaryKeywords: [机场节点, 订阅链接, 机场协议]
 difficulty: beginner
 publishedAt: 2026-10-05
-updatedAt: 2026-10-05
+updatedAt: 2026-10-19
 rankBlock: none
 relatedTopics: [what-is-jichang, vless-trojan-hysteria2-bijiao, dingyue-lianjie-anquan, proxy-node, subscription-link, exit-node]
 faqs:
@@ -48,6 +48,11 @@ faqs:
 | 线路 | 流量从入口到落地走的路径 | 一条条公交线路 | 节点名称标签、官网说明 | 延迟抖动和稳定程度 |
 
 它们的关系可以浓缩成一句话：**订阅里装着很多节点，每个节点用某种协议通信，并经由某种线路到达出口。** 术语速查可以翻 [节点是什么](/glossary/proxy-node/) 和 [订阅链接是什么](/glossary/subscription-link/)。
+
+<figure class="article-figure">
+<img src="/images/diagrams/jiedian-dingyue-xieyi-guanxi.svg" alt="节点订阅协议线路的关系：订阅是一条网址，里面装着很多节点；每个节点用某种协议通信，经某种线路到达出口" width="960" height="316" loading="lazy" decoding="async">
+<figcaption>图：节点、订阅、协议、线路的关系（示意图）</figcaption>
+</figure>
 
 ## 节点：一份连接配置，背后是一台（或一组）服务器
 
