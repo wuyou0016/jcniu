@@ -10,6 +10,7 @@ import {
   robotsToString,
   type RobotsDirective,
 } from '../config/seo';
+import { isNoindexPath } from '../config/crawl-rules.mjs';
 
 interface Props {
   title: string;
@@ -27,13 +28,16 @@ const {
   title,
   description = siteConfig.defaultDescription,
   pathname,
-  robots = DEFAULT_ROBOTS,
+  robots: robotsProp,
   ogType = defaultOpenGraph.type,
   ogImage = siteConfig.defaultOgImage,
   publishedTime,
   modifiedTime,
   keywords,
 } = Astro.props;
+
+// 页面没有显式指定 robots 时，按 crawl-rules 的规则决定是否 noindex（页面保留、follow 不变，只是不进索引与 sitemap）。
+const robots: RobotsDirective = robotsProp ?? (isNoindexPath(pathname) ? { index: false, follow: true } : DEFAULT_ROBOTS);
 
 // title 若已包含品牌名则不重复拼接，避免"梯子IT实验室｜XXX｜梯子IT实验室"。
 const resolvedTitle = title.includes(siteConfig.brandName) ? title : `${title}${BRAND_TITLE_SUFFIX}`;

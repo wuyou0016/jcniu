@@ -2,6 +2,7 @@
 // 对 dist/ 里的每个页面检查：title/description 长度与重复、H1 数量、canonical、JSON-LD 可解析、
 // 内链死链、图片 alt、FAQPage 与可见文字一致、sitemap 覆盖。
 import { INDEXABLE_TAGS } from '../src/config/indexable-tags.mjs';
+import { isNoindexPath } from '../src/config/crawl-rules.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -105,7 +106,8 @@ for (const [d, rs] of descs) if (rs.length > 1) problems.push(`重复 descriptio
 const sm = fs.readFileSync(path.join(dist, 'sitemap-0.xml'), 'utf8');
 const urls = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
 // noindex 的标签页（非 INDEXABLE_TAGS）与标签总览页不进 sitemap，这是有意的。
-const expected = [...routeSet].filter((r) => r !== '/404/' && !(r === '/tag/' || (r.startsWith('/tag/') && !INDEXABLE_TAGS.includes(r.split('/')[2]))));
+// 2026-10-19：crawl-rules.mjs 里 noindex 的栏目/页面（工具页、更新日志、配对对比页）同样不进 sitemap。
+const expected = [...routeSet].filter((r) => r !== '/404/' && !isNoindexPath(r) && !(r === '/tag/' || (r.startsWith('/tag/') && !INDEXABLE_TAGS.includes(r.split('/')[2]))));
 for (const r of expected) if (!urls.includes(`${BASE}${r}`)) problems.push(`sitemap 缺 ${r}`);
 stats.sitemapUrls = urls.length;
 

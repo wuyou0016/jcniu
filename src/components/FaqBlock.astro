@@ -9,7 +9,11 @@ interface Props {
   id?: string;
 }
 
-const { items, heading, jsonLd = true, id } = Astro.props;
+import { faqAllowed } from '../config/crawl-rules.mjs';
+
+const { items: allItems, heading, jsonLd = true, id } = Astro.props;
+// 2026-10-19：只在有问答意图的栏目显示 FAQ（见 config/crawl-rules.mjs）；其余页面整块不渲染，FAQPage 结构化数据随之不输出。
+const items = faqAllowed(Astro.url.pathname) ? allItems : [];
 
 const faqJsonLd = {
   '@context': 'https://schema.org',

@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { INDEXABLE_TAGS } from './src/config/indexable-tags.mjs';
+import { isNoindexPath } from './src/config/crawl-rules.mjs';
 
 
 // sitemap 的 lastmod 取内容 frontmatter 里的 updatedAt（文章、术语），其余页面用整站最近一次整体更新日；不使用构建时间。
@@ -61,6 +62,10 @@ function isSitemapExcluded(pageUrl) {
     return true;
   }
   if (url.pathname === '/internal-stats' || url.pathname === '/internal-stats/') {
+    return true;
+  }
+  // 2026-10-19 收敛：noindex 的栏目/页面不进 sitemap（规则见 src/config/crawl-rules.mjs）
+  if (isNoindexPath(url.pathname)) {
     return true;
   }
   return false;
