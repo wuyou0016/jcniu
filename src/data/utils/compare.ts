@@ -4,8 +4,22 @@ import { cheapestMonthly, cleanLabel, hasMonthlyPlan, planFacts } from './provid
 // 两两对比页覆盖榜单前 N 名之间的所有组合（N=4 → 6 对；2026-10 由 8 名 28 对收敛，避免新域名放出大量高度相似的配对页）。
 export const PAIR_COUNT_TOP = 4;
 
+/**
+ * 2026-10-21 追加的配对：不在"前 N 名"范围内，但已在 Google 有排名与点击的对比页。
+ * feimao-cloud-vs-xingdaomeng：近 28 天 Google 平均排名 3.8、9 次展示 2 次点击，是本站点击率最高的页面；
+ * 它在 10/9 的"28 对→6 对"收敛里被删成了 404。只追加这一对，其余 21 对仍保持下线（旧网址 301 到 /compare/，见 public/_redirects）。
+ * 顺序 [a, b] 必须与榜单名次一致（a 在前），网址才与原来相同。
+ */
+export const EXTRA_PAIRS: [string, string][] = [['feimao-cloud', 'xingdaomeng']];
+
 export function pairSlug(a: string, b: string): string {
   return `${a}-vs-${b}`;
+}
+
+/** 这两家之间是否有对比页：前 N 名内的任意组合，或在 EXTRA_PAIRS 里。返回 slug，没有则返回空串。 */
+export function extraPairSlug(a: string, b: string): string {
+  const hit = EXTRA_PAIRS.find(([x, y]) => (x === a && y === b) || (x === b && y === a));
+  return hit ? pairSlug(hit[0], hit[1]) : '';
 }
 
 const uniq = (list: string[]) => [...new Set(list)];

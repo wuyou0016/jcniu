@@ -4,7 +4,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import FaqBlock from '../../components/FaqBlock.astro';
 import { getBoard } from '../../data/utils/board';
 import { cheapestMonthly, cleanLabel, hasMonthlyPlan } from '../../data/utils/provider-facts';
-import { PAIR_COUNT_TOP, pairSlug, summarizePair } from '../../data/utils/compare';
+import { EXTRA_PAIRS, PAIR_COUNT_TOP, pairSlug, summarizePair } from '../../data/utils/compare';
 
 export async function getStaticPaths() {
   const board = await getBoard();
@@ -16,6 +16,12 @@ export async function getStaticPaths() {
       const b = top[j]!.provider.data.slug;
       paths.push({ params: { pair: pairSlug(a, b) }, props: { a, b } });
     }
+  }
+  // 追加配对（见 compare.ts 的 EXTRA_PAIRS）：两家都必须在榜单里，且不与前 N 名组合重复
+  for (const [a, b] of EXTRA_PAIRS) {
+    const slug = pairSlug(a, b);
+    if (paths.some((p) => p.params.pair === slug)) continue;
+    if (board.rows.some((r) => r.provider.data.slug === a) && board.rows.some((r) => r.provider.data.slug === b)) paths.push({ params: { pair: slug }, props: { a, b } });
   }
   return paths;
 }

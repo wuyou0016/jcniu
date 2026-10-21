@@ -10,7 +10,7 @@ import { isDemoEntry } from '../../data/utils/demo-filter';
 import { getBoard } from '../../data/utils/board';
 import { cheapestMonthly, cleanLabel, planFacts } from '../../data/utils/provider-facts';
 import Icon from '../../components/Icon.astro';
-import { PAIR_COUNT_TOP, pairSlug } from '../../data/utils/compare';
+import { EXTRA_PAIRS, PAIR_COUNT_TOP, extraPairSlug, pairSlug } from '../../data/utils/compare';
 import { getArticleHref } from '../../data/utils/article-routing';
 import { buildProviderFaq, buildProductJsonLd } from '../../data/seo/provider-faq';
 import { getTagsForProvider } from '../../data/seo/seo-tags';
@@ -77,7 +77,7 @@ if (!plans.some((plan) => plan.cycle === '按月付费')) missing.push({ title: 
 function pairSlugFor(a: string, b: string, rows: typeof board.rows): string {
   const idx = (x: string) => rows.findIndex((r) => r.provider.data.slug === x);
   if (idx(a) < PAIR_COUNT_TOP && idx(b) < PAIR_COUNT_TOP) return idx(a) < idx(b) ? pairSlug(a, b) : pairSlug(b, a);
-  return '';
+  return extraPairSlug(a, b);
 }
 const prevPair = prev ? pairSlugFor(slug, prev.provider.data.slug, board.rows) : '';
 const nextPair = next ? pairSlugFor(slug, next.provider.data.slug, board.rows) : '';
@@ -311,6 +311,12 @@ const webPageJsonLd = {
   <ul class="quick-links">
     <li><a href="/rankings/">机场推荐排行榜</a></li>
     <li><a href="/compare/">机场对比总表</a></li>
+    {
+      EXTRA_PAIRS.filter(([x, y]) => x === slug || y === slug).map(([x, y]) => {
+        const other = board.rows.find((r) => r.provider.data.slug === (x === slug ? y : x));
+        return other ? <li><a href={`/compare/${pairSlug(x, y)}/`}>{p.name}和{other.provider.data.name}哪个好</a></li> : null;
+      })
+    }
     <li><a href="/coupons/">机场优惠码</a></li>
     <li><a href="/airport-warnings/">机场跑路预警</a></li>
     <li><a href="/guides/jichang-zenme-xuan/">机场怎么选</a></li>

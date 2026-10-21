@@ -4,10 +4,12 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import FaqBlock from '../../components/FaqBlock.astro';
 import { getBoard } from '../../data/utils/board';
 import { cheapestMonthly, cleanLabel, hasMonthlyPlan } from '../../data/utils/provider-facts';
-import { PAIR_COUNT_TOP, pairSlug } from '../../data/utils/compare';
+import { EXTRA_PAIRS, PAIR_COUNT_TOP, pairSlug } from '../../data/utils/compare';
 
 const board = await getBoard();
 const top = board.rows.slice(0, PAIR_COUNT_TOP);
+const bySlug = new Map(board.rows.map((r) => [r.provider.data.slug, r.provider.data.name]));
+const extra = EXTRA_PAIRS.filter(([a, b]) => bySlug.has(a) && bySlug.has(b));
 const tierLabel = new Map(board.tiers.map((t) => [t.id, t.label]));
 
 const faqs = [
@@ -85,6 +87,15 @@ const faqs = [
           </a>
         )),
       )
+    }
+    {
+      extra.map(([a, b]) => (
+        <a class="entry-card" href={`/compare/${pairSlug(a, b)}/`}>
+          <span class="entry-card__kicker">VS</span>
+          <span class="entry-card__title">{bySlug.get(a)} 和 {bySlug.get(b)}哪个好</span>
+          <span class="entry-card__cta">看对比 →</span>
+        </a>
+      ))
     }
   </div>
 
