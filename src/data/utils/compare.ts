@@ -5,12 +5,21 @@ import { cheapestMonthly, cleanLabel, hasMonthlyPlan, planFacts } from './provid
 export const PAIR_COUNT_TOP = 4;
 
 /**
- * 2026-10-21 追加的配对：不在"前 N 名"范围内，但已在 Google 有排名与点击的对比页。
+ * 2026-10-21/22 追加的配对：不在"前 N 名"范围内，但已在 Google 有排名的对比页（都在 10/9 的"28 对→6 对"收敛里被删成了 404）。
  * feimao-cloud-vs-xingdaomeng：近 28 天 Google 平均排名 3.8、9 次展示 2 次点击，是本站点击率最高的页面；
- * 它在 10/9 的"28 对→6 对"收敛里被删成了 404。只追加这一对，其余 21 对仍保持下线（旧网址 301 到 /compare/，见 public/_redirects）。
+ * 另外 4 个都围绕"星岛梦"这个有品牌搜索需求的名字：guangsu-cloud-vs-xingdaomeng（排名 1、1 次点击）、
+ * weifeng-network-vs-xingdaomeng（5）、xingdaomeng-vs-shanyue（6）、wuyou-lianjie-vs-xingdaomeng（3），展示都很少但名次靠前。
+ * 对比页已在 10/22 加厚（套餐明细、优缺点与适用人群对照、资料来源与核对日期），不再是 700 字的薄页。
+ * 其余 16 对仍保持下线（旧网址 301 到 /compare/，见 public/_redirects）。
  * 顺序 [a, b] 必须与榜单名次一致（a 在前），网址才与原来相同。
  */
-export const EXTRA_PAIRS: [string, string][] = [['feimao-cloud', 'xingdaomeng']];
+export const EXTRA_PAIRS: [string, string][] = [
+  ['feimao-cloud', 'xingdaomeng'],
+  ['guangsu-cloud', 'xingdaomeng'],
+  ['weifeng-network', 'xingdaomeng'],
+  ['xingdaomeng', 'shanyue'],
+  ['wuyou-lianjie', 'xingdaomeng'],
+];
 
 export function pairSlug(a: string, b: string): string {
   return `${a}-vs-${b}`;

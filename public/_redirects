@@ -4,26 +4,23 @@
 # 默认猜测路径，不重定向会 404。
 /sitemap.xml /sitemap-index.xml 301
 
-# 2026-10-21：10/9 起下线的 21 个旧配对对比页（原为榜单前 8 名两两组合 28 对）统一 301 到对比总表，保住已有的搜索信号；
-# feimao-cloud-vs-xingdaomeng 已在 compare.ts 的 EXTRA_PAIRS 里恢复，不在此列。
+# 2026-10-21：10/9 起下线的旧配对对比页（原为榜单前 8 名两两组合 28 对）统一 301 到对比总表，保住已有的搜索信号；
+# 星岛梦相关的 5 对（feimao-cloud / guangsu-cloud / weifeng-network / shanyue / wuyou-lianjie 与 xingdaomeng）
+# 已在 compare.ts 的 EXTRA_PAIRS 里恢复，不在此列。
 /compare/wuyou-lianjie-vs-guangsu-cloud/ /compare/ 301
-/compare/wuyou-lianjie-vs-xingdaomeng/ /compare/ 301
 /compare/wuyou-lianjie-vs-shanyue/ /compare/ 301
 /compare/wuyou-lianjie-vs-jilian-cloud/ /compare/ 301
 /compare/feimao-cloud-vs-guangsu-cloud/ /compare/ 301
 /compare/feimao-cloud-vs-shanyue/ /compare/ 301
 /compare/feimao-cloud-vs-jilian-cloud/ /compare/ 301
 /compare/weifeng-network-vs-guangsu-cloud/ /compare/ 301
-/compare/weifeng-network-vs-xingdaomeng/ /compare/ 301
 /compare/weifeng-network-vs-shanyue/ /compare/ 301
 /compare/weifeng-network-vs-jilian-cloud/ /compare/ 301
 /compare/firefly-vs-guangsu-cloud/ /compare/ 301
 /compare/firefly-vs-xingdaomeng/ /compare/ 301
 /compare/firefly-vs-shanyue/ /compare/ 301
 /compare/firefly-vs-jilian-cloud/ /compare/ 301
-/compare/guangsu-cloud-vs-xingdaomeng/ /compare/ 301
 /compare/guangsu-cloud-vs-shanyue/ /compare/ 301
 /compare/guangsu-cloud-vs-jilian-cloud/ /compare/ 301
-/compare/xingdaomeng-vs-shanyue/ /compare/ 301
 /compare/xingdaomeng-vs-jilian-cloud/ /compare/ 301
 /compare/shanyue-vs-jilian-cloud/ /compare/ 301

@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import FaqBlock from '../../components/FaqBlock.astro';
 import { getBoard } from '../../data/utils/board';
-import { cheapestMonthly, cleanLabel, hasMonthlyPlan } from '../../data/utils/provider-facts';
+import { cheapestMonthly, cleanLabel, hasMonthlyPlan, planFacts } from '../../data/utils/provider-facts';
 import { EXTRA_PAIRS, PAIR_COUNT_TOP, pairSlug, summarizePair } from '../../data/utils/compare';
 
 export async function getStaticPaths() {
@@ -56,6 +56,21 @@ const cells = (row: typeof ra) => {
 };
 const ca = cells(ra);
 const cb = cells(rb);
+
+// 套餐明细、优缺点与适用人群都取自各品牌档案里已有的资料，不在对比页里另写结论。
+const sourceTypeLabel: Record<string, string> = { vendor: '官方公开信息', 'third-party': '第三方资料', editorial: '站长/编辑确认', 'in-house': '本站实测' };
+const fmt = (value: Date | string) => (typeof value === 'string' ? new Date(value) : value).toISOString().slice(0, 10);
+const strip = (s: string) => s.replace(/[。.]$/, '');
+const sides = [ra, rb].map((r) => {
+  const d = r.provider.data;
+  return { slug: d.slug, name: d.name, plans: planFacts(r.provider), ed: d.editorial, sourceType: sourceTypeLabel[d.vendor.source.type] ?? '', verified: fmt(d.lastVerified) };
+});
+const editorialRows: [string, 'pros' | 'cons' | 'suitableFor' | 'notSuitableFor'][] = [
+  ['资料里的优点', 'pros'],
+  ['需要留意的地方', 'cons'],
+  ['更适合', 'suitableFor'],
+  ['不太适合', 'notSuitableFor'],
+];
 const rowsDef: [string, keyof typeof ca][] = [
   ['夯到拉档位', 'tier'],
   ['资料里最低月均价', 'price'],
@@ -73,6 +88,7 @@ const description = `${na}和${nb}机场对比：把两家的最低月均价、�
 const faqs = [
   { q: `${na}和${nb}哪个好？`, a: `没有绝对答案，要看你的需求。${summary.verdictHint}价格、线路、协议和地区的具体差异见上面的对比表，速度和稳定性机场牛没有测试记录，不下结论，建议各买一个月付套餐在自己的网络里试。` },
   { q: `${na}和${nb}哪个更便宜？`, a: (summary.sentences[0] ?? '').replace(/^价格：/, '') },
+  { q: `${na}和${nb}分别适合什么人？`, a: `${na}：${strip(sides[0]!.ed.suitableFor[0] ?? '资料里没有写明适合人群')}。${nb}：${strip(sides[1]!.ed.suitableFor[0] ?? '资料里没有写明适合人群')}。适合人群来自各自档案里的整理，不是速度或稳定性测试的结论。` },
   { q: `${na}和${nb}能用 Clash 吗？`, a: `两家资料里${[na, nb].filter((_, i) => ((i === 0 ? ra : rb).provider.data.vendor.clientSupport ?? []).some((c) => /clash/i.test(c))).join('、') || '都没有'}明确写了支持 Clash；没有写不等于不能用，导入前请确认订阅使用的协议与客户端兼容，并以官网说明为准。` },
 ];
 ---
@@ -118,6 +134,78 @@ const faqs = [
   <ul>
     {summary.sentences.map((s) => <li>{s}</li>)}
   </ul>
+
+  <h2>套餐明细对照</h2>
+  <p>下面是两家资料里记录的全部套餐。价格是官网或第三方资料里的文案，计费周期不同的档位不能直接拿单价硬比。</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>品牌</th>
+          <th>套餐</th>
+          <th>价格</th>
+          <th>计费周期</th>
+          <th>流量</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sides.flatMap((s) =>
+          s.plans.length > 0
+            ? s.plans.map((pl, i) => (
+                <tr>
+                  {i === 0 && <td rowspan={s.plans.length}><a href={`/airports/${s.slug}/`}>{s.name}</a></td>}
+                  <td>{pl.name}</td>
+                  <td>{pl.price}</td>
+                  <td>{pl.cycle || '资料未注明'}</td>
+                  <td>{pl.quota || '资料未注明'}</td>
+                </tr>
+              ))
+            : [
+                <tr>
+                  <td><a href={`/airports/${s.slug}/`}>{s.name}</a></td>
+                  <td colspan="4">资料里没有可核实的套餐记录，请到官网确认。</td>
+                </tr>,
+              ],
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>资料里怎么评价这两家</h2>
+  <p>下面按各自档案整理要点，每一条都来自档案里标注了来源的资料；机场牛没有为这两家做过速度、稳定性或解锁测试，所以这里没有这方面的结论。</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>要点</th>
+          <th>{na}</th>
+          <th>{nb}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {editorialRows.map(([label, key]) => (
+          <tr>
+            <td><b>{label}</b></td>
+            {sides.map((s) => (
+              <td>
+                <ul>{s.ed[key].slice(0, 2).map((t) => <li>{t}</li>)}</ul>
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>资料来源与核对日期</h2>
+  <ul>
+    {sides.map((s) => (
+      <li>
+        <a href={`/airports/${s.slug}/`}>{s.name}</a>：主要资料来源类型是{s.sourceType}，档案最近一次核对日期为 {s.verified}；完整的来源、第三方记录和资料空白见<a href={`/airports/${s.slug}/`}>{s.name}档案</a>。
+      </li>
+    ))}
+  </ul>
+  <p class="muted">套餐和价格随时会调整，下单前请以官网结算页为准。</p>
 
   <h2>怎么选</h2>
   <p>
