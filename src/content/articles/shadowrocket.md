@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: none
-relatedTopics: [shadowrocket-daoru-dingyue, ios-jichang-jiaocheng, shadowrocket-jichang-tuijian]
+relatedTopics: [shadowrocket-daoru-dingyue, ios-jichang-jiaocheng, shadowrocket-jichang-tuijian, xiaohuojian-tidai]
 faqs:
   - q: 小火箭在 App Store 里搜不到怎么办？
     a: 是否上架因地区而异，部分地区的商店里搜不到这类工具，以你当地商店的实际页面为准。常见做法是改用其他地区的 Apple ID 登录 App Store，这会涉及账号地区、付款方式等 Apple 规则，请先读官方说明并遵守所在地法律法规。不要使用来路不明的共享账号。

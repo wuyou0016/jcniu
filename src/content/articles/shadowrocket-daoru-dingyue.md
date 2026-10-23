@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: none
-relatedTopics: [shadowrocket, ios-jichang-jiaocheng, dingyue-gengxin-pinlv]
+relatedTopics: [shadowrocket, ios-jichang-jiaocheng, dingyue-gengxin-pinlv, xiaohuojian-tidai]
 faqs:
   - q: 小火箭里的订阅和单个节点有什么区别？
     a: 单个节点是手动添加的一条服务器信息，一旦机场调整就要自己改。订阅是一个网址，应用会定期去拉取最新的整批节点，机场换了服务器，更新一下就同步。日常用机场，优先用订阅，单个节点更适合自己搭建的服务器。

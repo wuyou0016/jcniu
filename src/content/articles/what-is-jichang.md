@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: none
-relatedTopics: [jiedian-dingyue-xieyi-guanxi, jichang-vs-vpn, jichang-zenme-xuan, subscription-link, proxy-node]
+relatedTopics: [jiedian-dingyue-xieyi-guanxi, jichang-vs-vpn, jichang-zenme-xuan, subscription-link, proxy-node, haoyong-de-tizi]
 faqs:
   - q: "机场这个名字是什么意思，和现实里的机场有关系吗？"
     a: "没有关系。机场是行业里的俗称，指提供节点订阅的服务商，叫法的来历有多种说法，没有统一定论，也不影响使用。理解时只要记住：机场是卖服务的一方，节点是它提供的入口，订阅是把节点交给你的方式。"

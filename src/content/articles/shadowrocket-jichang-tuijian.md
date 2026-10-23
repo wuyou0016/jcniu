@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: monthly
-relatedTopics: [shadowrocket, shadowrocket-daoru-dingyue, ios-jichang-jiaocheng, jichang-zenme-xuan]
+relatedTopics: [shadowrocket, shadowrocket-daoru-dingyue, ios-jichang-jiaocheng, jichang-zenme-xuan, xiaohuojian-tidai]
 faqs:
   - q: 小火箭和机场是什么关系？买了小火箭就能上网吗？
     a: 不能。小火箭只是客户端，负责按配置把流量发到节点，它本身不提供节点。你还需要一个机场提供的订阅链接，导入后才有节点可选。简单说，客户端管怎么连，机场管连到哪，两样缺一不可。

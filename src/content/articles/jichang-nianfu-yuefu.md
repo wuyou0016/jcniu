@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: monthly
-relatedTopics: [nianfu-fengxian, jichang-zenme-xuan, pianyi-jichang-kaopu-ma]
+relatedTopics: [nianfu-fengxian, jichang-zenme-xuan, pianyi-jichang-kaopu-ma, shuangshiyi-jichang-tuijian, zidong-xufei-zhifu]
 faqs:
   - q: "年付一定比月付划算吗？"
     a: "不一定。年付的月均价通常更低，但前提是你能把一年用满，并且服务质量在整个周期里都过得去。折算出盈亏平衡月数：年付总价除以月付单价，如果你实际用不到这个月数，或者中途想换，年付反而更亏。"

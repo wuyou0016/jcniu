@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: cheap
-relatedTopics: [xingjiabi-jichang-zenme-pan, jichang-nianfu-yuefu, nianfu-fengxian, jichang-zenme-xuan]
+relatedTopics: [xingjiabi-jichang-zenme-pan, jichang-nianfu-yuefu, nianfu-fengxian, jichang-zenme-xuan, shuangshiyi-jichang-tuijian, yiyuan-shiyong-jichang]
 faqs:
   - q: "低价机场一定不靠谱吗？"
     a: "不一定。价格低往往是流量更少、线路更普通、客服更精简换来的，这些取舍如果写得清楚、你也能接受，就是正常的低价。真正要警惕的是价格低得不合常理、同时还宣传没有任何限制，或者逼你一次付很长周期。"

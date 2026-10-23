@@ -9,7 +9,7 @@ difficulty: advanced
 publishedAt: 2026-10-15
 updatedAt: 2026-10-15
 rankBlock: none
-relatedTopics: [shebei-shu-xianzhi, tun-mode-setup, mihomo-fenliu-guize, dns-xielou-jiance]
+relatedTopics: [shebei-shu-xianzhi, tun-mode-setup, mihomo-fenliu-guize, dns-xielou-jiance, youxi-jichang-xuanze]
 faqs:
   - q: 路由器上接入机场之后，家里所有设备都能用吗？
     a: 只要设备连的是这台路由器，通常都会走同一个出口，也包括你不想走代理的设备，所以要配合规则，让国内流量直连。另外，机场的设备数限制、是否允许在路由器上使用，都要提前确认，别默认可行。

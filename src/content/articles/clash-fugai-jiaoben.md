@@ -9,7 +9,7 @@ difficulty: advanced
 publishedAt: 2026-10-15
 updatedAt: 2026-10-15
 rankBlock: none
-relatedTopics: [mihomo-fenliu-guize, clash-verge, clash-verge-daoru-dingyue, dingyue-gengxin-pinlv]
+relatedTopics: [mihomo-fenliu-guize, clash-verge, clash-verge-daoru-dingyue, dingyue-gengxin-pinlv, luyouqi-zhuji-jichang]
 faqs:
   - q: 为什么不直接改订阅下载下来的配置文件？
     a: 因为订阅一更新，文件就会被重新下载覆盖，你改的内容会丢失。覆写的思路是把自己的修改单独存放，每次订阅更新后自动叠加上去，这样订阅可以照常更新，你的规则也不会丢。

@@ -9,7 +9,7 @@ difficulty: intermediate
 publishedAt: 2026-10-15
 updatedAt: 2026-10-15
 rankBlock: none
-relatedTopics: [tun-mode-setup, jichang-ceshu-gongju, iplc-iepl-zhongzhuan-quebie, wanggaofeng-bian-man]
+relatedTopics: [tun-mode-setup, jichang-ceshu-gongju, iplc-iepl-zhongzhuan-quebie, wanggaofeng-bian-man, luyouqi-zhuji-jichang]
 faqs:
   - q: 机场能当游戏加速器用吗？
     a: 能不能用要看具体游戏和线路，不能一概而论。机场是通用的代理服务，加速器通常针对游戏做了专门的线路和协议处理。机场对联机游戏的帮助往往有限，主要用于登录、更新和商店访问，联机体验先小范围试用再判断。

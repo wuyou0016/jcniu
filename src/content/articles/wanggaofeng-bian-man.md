@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: dedicated
-relatedTopics: [wending-jichang-zenme-pan, jichang-ceshu-gongju, zhuanxian-jichang-zhidebuzhide]
+relatedTopics: [wending-jichang-zenme-pan, jichang-ceshu-gongju, zhuanxian-jichang-zhidebuzhide, youxi-jichang-xuanze]
 symptom: 白天正常，到了晚高峰或周末晚上，网页加载变慢、视频缓冲、下载速度明显下降
 faqs:
   - q: 机场只在晚上变慢，是机场的问题吗？

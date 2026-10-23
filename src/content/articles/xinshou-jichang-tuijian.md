@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: monthly
-relatedTopics: [jichang-zenme-xuan, what-is-jichang, clash-verge, shadowrocket, jichang-nianfu-yuefu]
+relatedTopics: [jichang-zenme-xuan, what-is-jichang, clash-verge, shadowrocket, jichang-nianfu-yuefu, yiyuan-shiyong-jichang]
 faqs:
   - q: "第一次买机场，流量买多少够用？"
     a: "没有统一答案，取决于你主要做什么。查资料、看文档、刷网页耗流量很少，看高清视频、大文件下载耗得多。第一次建议先买小流量的月付套餐，用一个月，在客户端或面板里看实际消耗，再决定下一档要不要升级。"

@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: overall
-relatedTopics: [pianyi-jichang-kaopu-ma, zhuanxian-jichang-zhidebuzhide, wending-jichang-zenme-pan, jichang-nianfu-yuefu, clash-verge, what-is-jichang]
+relatedTopics: [pianyi-jichang-kaopu-ma, zhuanxian-jichang-zhidebuzhide, wending-jichang-zenme-pan, jichang-nianfu-yuefu, clash-verge, what-is-jichang, haoyong-de-tizi, yiyuan-shiyong-jichang]
 faqs:
   - q: "第一次买机场，先买月付还是年付？"
     a: "建议先买月付或最小的周期套餐。你还不知道这家的晚高峰表现、客服响应和客户端兼容情况，年付等于提前把这些未知数一次性付清。月付用满一个周期、确认没问题再续一次，之后再考虑年付，试错成本最低。"

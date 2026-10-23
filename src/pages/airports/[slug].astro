@@ -15,6 +15,7 @@ import { getArticleHref } from '../../data/utils/article-routing';
 import { buildProviderFaq, buildProductJsonLd } from '../../data/seo/provider-faq';
 import { getTagsForProvider } from '../../data/seo/seo-tags';
 import { SEO_COPY } from '../../data/seo/site-copy';
+import monitor from '../../data/live/monitor.json';
 
 export async function getStaticPaths() {
   const board = await getBoard();
@@ -46,17 +47,46 @@ const protocols = (v.protocols ?? []).map(cleanLabel).filter(Boolean);
 const regions = v.regions ?? [];
 const clients = v.clientSupport ?? [];
 
-// 标题：问句公式（"{品牌}机场怎么样？年份 线路词 机场推荐与资料核对"），线路词只取资料里真实存在的字段。
+// 标题：问句公式（"{品牌}机场怎么样？线路词机场价格与资料核对"），线路词只取资料里真实存在的字段。
+// 2026-10-23：Google 里品牌页吃到的查询是"XX 机场 官网"，其余页面改为"官网与机场怎么样？价格、线路和官网入口核验"，
+// H1 不再写"机场推荐"（留给榜单页）。下面 4 个页面 Google 里已有排名（均排 4.3–17、2 个有点击），title/H1/description 先保持原样。
+const RANKING_PAGES = new Set(['xingdaomeng', 'ermao-cloud', 'lingmao-network', 'yuzhou-cloud']);
+const keepRanking = RANKING_PAGES.has(slug);
 const lineWord = routes.length > 0 ? `${routes[0]!.replace(/（.*$/, '')}${/专线/.test(routes[0]!) ? '' : '专线'}` : protocols.length > 0 ? `${protocols[0]}协议` : '';
-const title = lineWord
-  ? `${p.name}机场怎么样？${lineWord}机场价格与资料核对｜机场牛`
-  : `${p.name}机场怎么样？官网资料核对、价格与风险提示｜机场牛`;
+const title = keepRanking
+  ? lineWord
+    ? `${p.name}机场怎么样？${lineWord}机场价格与资料核对｜机场牛`
+    : `${p.name}机场怎么样？官网资料核对、价格与风险提示｜机场牛`
+  : `${p.name}官网与机场怎么样？价格、线路和官网入口核验｜机场牛`;
 
 const priceBit = plans[0] ? `${plans[0].name}档${plans[0].price}${plans[0].quota ? `、${plans[0].quota}` : ''}` : '价格资料暂缺';
-const description = `${p.name}机场评测：${priceBit}${routes.length ? `，线路记录为${routes.join('、')}` : ''}${protocols.length ? `，协议${protocols.join('/')}` : ''}。机场牛把它排在夯到拉榜第 ${row.rank} 名（${tier.label}档），逐条标注价格、线路与来源类型，不替商家编造速度和解锁结论。`;
+const descTail = `机场牛把它排在夯到拉榜第 ${row.rank} 名（${tier.label}档），逐条标注价格、线路与来源类型，不替商家编造速度和解锁结论。`;
+const description = keepRanking
+  ? `${p.name}机场评测：${priceBit}${routes.length ? `，线路记录为${routes.join('、')}` : ''}${protocols.length ? `，协议${protocols.join('/')}` : ''}。${descTail}`
+  : `${p.name}官网与机场资料：${priceBit}${routes.length ? `，线路记录为${routes.join('、')}` : ''}${protocols.length ? `，协议${protocols.join('/')}` : ''}，并记录官网入口的最近检测结果。${descTail}`;
+
+// 官网入口检测（scripts/monitor.mjs 生成）：只说明检测点当时能不能打开入口，不代表节点可用，也不代表中国大陆网络下的情况。
+const liveResult = monitor.results.find((r) => r.id === provider.id);
+const liveHistory = ((monitor.history as Record<string, { day: string; checks: number; reachable: number }[]>)[provider.id] ?? []);
+const liveChecks = liveHistory.reduce((n, d) => n + d.checks, 0);
+const liveReachable = liveHistory.reduce((n, d) => n + d.reachable, 0);
+const liveDay = monitor.checkedAt.slice(0, 10);
+const liveText = !liveResult
+  ? '这家还没有检测记录'
+  : liveResult.state === 'up'
+    ? `能正常打开（HTTP ${liveResult.status}）`
+    : liveResult.state === 'guarded'
+      ? `服务器有响应，但拦截了自动检测（HTTP ${liveResult.status}）`
+      : liveResult.state === 'error'
+        ? `服务器返回报错（HTTP ${liveResult.status}）`
+        : '检测点这次没有收到响应';
 
 const canonicalUrl = resolveCanonicalUrl(`/airports/${slug}/`);
-const providerFaq = buildProviderFaq(provider, providerTests.length);
+const officialFaq = {
+  q: `${p.name}官网是哪个？怎么确认入口是真的？`,
+  a: `本页“前往官网查看套餐”按钮就是${p.name}的官网注册入口，链接带推广标识（sponsored），价格与套餐以官网结算页为准。最近一次检测在 ${liveDay}：${liveText}；这只说明检测点当时能不能打开入口，不代表节点可用，也不代表中国大陆网络下的情况。确认真假时，把浏览器地址栏里的域名和客服渠道、官方公告给出的域名逐字对照，不要在陌生广告页或“限时秒杀”页面付款。`,
+};
+const providerFaq = [officialFaq, ...buildProviderFaq(provider, providerTests.length)];
 const providerTags = getTagsForProvider(provider);
 const productJsonLd = buildProductJsonLd(provider, canonicalUrl, description);
 
@@ -114,7 +144,7 @@ const webPageJsonLd = {
   title={title}
   description={description}
   modifiedTime={fmt(p.updatedAt)}
-  keywords={[`${p.name}机场`, `${p.name}怎么样`, '机场推荐', ...(routes.length ? [routes[0]!] : [])]}
+  keywords={[`${p.name}官网`, `${p.name}机场`, `${p.name}怎么样`, '机场推荐', ...(routes.length ? [routes[0]!] : [])]}
 >
   <Breadcrumbs
     items={[
@@ -127,7 +157,7 @@ const webPageJsonLd = {
     <div class="dossier-head__no" aria-label={`榜单第 ${row.rank} 名`}>{String(row.rank).padStart(2, '0')}</div>
     <div>
       <span class="section__eyebrow">AIRPORT DOSSIER · {board.rows.length} 家中的第 {row.rank} 名</span>
-      <h1>{p.name}机场推荐与资料档案</h1>
+      <h1>{keepRanking ? `${p.name}机场推荐与资料档案` : `${p.name}官网入口与机场资料档案`}</h1>
       <p class="article-meta">
         <span class={`tier-pill tier-pill--${row.tier}`}>{tier.label} · {tier.tagline}</span>
         {isFirst && <span class="badge badge--gold"><span>👑 综合第一名</span></span>}
@@ -160,6 +190,21 @@ const webPageJsonLd = {
       data-cta-label="品牌页官网入口"
     >前往官网查看套餐</a>
   </div>
+
+  <h2>{p.name}官网入口核验</h2>
+  <div class="table-wrap">
+    <table>
+      <tbody>
+        <tr><th scope="row">入口类型</th><td>带推广标识的官网注册入口（链接已标注 sponsored）；价格与套餐以官网结算页为准</td></tr>
+        <tr><th scope="row">最近检测</th><td>{liveDay}，{monitor.vantage}：{liveText}</td></tr>
+        <tr><th scope="row">累计记录</th><td>{liveChecks} 次检测，{liveReachable} 次收到响应{liveChecks < 5 ? '（刚开始记录，样本很少，不能据此判断稳定性）' : ''}</td></tr>
+        <tr><th scope="row">连接方式</th><td>{v.officialWebsite.startsWith('https:') ? '入口使用 https 加密连接' : '入口不是 https，付款前请格外留意'}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">
+    检测只说明检测点当时能不能打开这个入口，不代表节点可用，也不代表中国大陆网络下的情况。确认入口真假：把地址栏域名和客服渠道、官方公告给出的域名逐字对照；不要在搜索结果里的陌生广告页付款；先买月付或最小周期。更多见<a href="/airport-warnings/">机场跑路预警</a>和<a href="/tools/airport-checklist/">买前自检清单</a>。
+  </p>
 
   <h2>{p.name}套餐与价格</h2>
   {

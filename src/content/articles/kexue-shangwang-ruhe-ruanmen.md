@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: monthly
-relatedTopics: [what-is-jichang, xinshou-jichang-tuijian, clash-verge, shadowrocket-daoru-dingyue]
+relatedTopics: [what-is-jichang, xinshou-jichang-tuijian, clash-verge, shadowrocket-daoru-dingyue, haoyong-de-tizi]
 faqs:
   - q: 入门需要懂技术吗，不会写代码能学会吗？
     a: 不需要懂代码。日常使用只涉及四个动作：获得订阅、安装客户端、粘贴订阅链接、选节点并打开代理开关。协议、分流规则这些原理可以用熟之后再慢慢了解，先把基本流程跑通，再按需求逐步深入即可。

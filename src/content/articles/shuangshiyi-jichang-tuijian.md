@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: cheap
-relatedTopics: [coupons-placeholder, jichang-nianfu-yuefu, nianfu-fengxian]
+relatedTopics: [coupons-placeholder, jichang-nianfu-yuefu, nianfu-fengxian, zidong-xufei-zhifu]
 faqs:
   - q: "双十一买机场，年付划算吗？"
     a: "要看你的情况。年付折算后月均价通常更低，大促时折扣可能更大，但前提是你已经验证过这家服务，并且确定会用满一年。没验证过的服务，折扣再大也是一次性押注。先算盈亏平衡月数，再决定。"

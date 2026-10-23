@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: none
-relatedTopics: [nianfu-fengxian, paolu-hou-zenme-zhisun, xujia-xuanchuan-shibie]
+relatedTopics: [nianfu-fengxian, paolu-hou-zenme-zhisun, xujia-xuanchuan-shibie, zidong-xufei-zhifu]
 faqs:
   - q: "机场跑路前一般会有什么征兆？"
     a: "常见的可观察征兆有七类：客服长时间失联、官网域名频繁变动、突然猛推长期套餐、节点成批失效且没有公告、订阅持续更新失败、退款条款收紧、多个独立用户同时反馈同类问题。单个征兆不能下结论，要看是否多个叠加、是否持续多天。"
