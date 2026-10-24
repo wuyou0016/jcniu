@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: dedicated
-relatedTopics: [iplc-iepl-zhongzhuan-quebie, wending-jichang-zenme-pan, jichang-zenme-xuan, iplc, iepl, relay-route]
+relatedTopics: [iplc-iepl-zhongzhuan-quebie, wending-jichang-zenme-pan, jichang-zenme-xuan, iplc, iepl, relay-route, dingji-jichang-zenme-pingding]
 faqs:
   - q: "专线机场一定比中转机场快吗？"
     a: "不一定。专线的优势主要在路径更固定、延迟抖动和丢包通常更小，而不是在任何场景下都跑得更快。网页、文档这类轻量使用，专线和中转的体感差别往往不明显。是否更快还要看带宽是否共享、入口节点质量和你自己的网络。"

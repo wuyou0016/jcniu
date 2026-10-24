@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: none
-relatedTopics: [pianyi-jichang-kaopu-ma, liuliang-beilv-jisuan, jichang-nianfu-yuefu, shuangshiyi-jichang-tuijian]
+relatedTopics: [pianyi-jichang-kaopu-ma, liuliang-beilv-jisuan, jichang-nianfu-yuefu, shuangshiyi-jichang-tuijian, dingji-jichang-zenme-pingding]
 faqs:
   - q: "每GB成本越低，机场性价比就越高吗？"
     a: "不一定。每GB成本只看价格和标称流量，没有考虑你实际能用掉多少、节点倍率、线路类型和设备数。流量用不完的话，实际成本要按真实用量算。对用量小、重视线路稳定的人来说，每GB成本参考价值有限。"

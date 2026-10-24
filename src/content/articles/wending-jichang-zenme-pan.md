@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: dedicated
-relatedTopics: [jichang-ceshu-gongju, zhuanxian-jichang-zhidebuzhide, wanggaofeng-bian-man, jichang-ceping-zenme-zuo]
+relatedTopics: [jichang-ceshu-gongju, zhuanxian-jichang-zhidebuzhide, wanggaofeng-bian-man, jichang-ceping-zenme-zuo, dingji-jichang-zenme-pingding]
 faqs:
   - q: "机场丢包率多少算正常？"
     a: "没有统一的数字标准，取决于你的用途。网页和下载对少量丢包比较宽容，视频会议、联机游戏则很敏感。比起纠结某个具体数值，更有意义的是在同一条件下连续多天、多个时段记录，对比同一个节点的波动，以及晚高峰和平时的差距。"

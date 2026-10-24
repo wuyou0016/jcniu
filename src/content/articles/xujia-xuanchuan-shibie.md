@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: none
-relatedTopics: [bu-xiansu-jichang-shi-zhende-ma, jichang-ceshu-gongju, paolu-yujing-xinhao-xiangjie, jichang-ceping-zenme-zuo]
+relatedTopics: [bu-xiansu-jichang-shi-zhende-ma, jichang-ceshu-gongju, paolu-yujing-xinhao-xiangjie, jichang-ceping-zenme-zuo, dingji-jichang-zenme-pingding]
 faqs:
   - q: "机场宣传的“不限速”“千兆带宽”可信吗？"
     a: "不能直接信。“不限速”通常只说明账号层面没有额外的速率上限，“千兆带宽”可能只是服务器端口规格，都不等于你能跑满。真正决定速度的还有共用人数、国际线路拥堵和你的本地网络。要看晚高峰、多节点、多次的实际表现。"

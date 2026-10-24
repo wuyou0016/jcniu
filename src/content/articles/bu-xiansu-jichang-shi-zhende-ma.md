@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-05
 updatedAt: 2026-10-05
 rankBlock: none
-relatedTopics: [xujia-xuanchuan-shibie, jichang-ceshu-gongju, liuliang-beilv-jisuan]
+relatedTopics: [xujia-xuanchuan-shibie, jichang-ceshu-gongju, liuliang-beilv-jisuan, dingji-jichang-zenme-pingding]
 faqs:
   - q: 套餐写着不限速，为什么下载还是很慢？
     a: 不限速通常只说明机场没有给你的账号设置速率上限，并不说明线路和节点有富余带宽。下载速度还取决于节点端口带宽被多少人共用、国际线路在晚高峰是否拥堵、你本地的宽带和 Wi-Fi，以及目标服务器自身的速度，任何一环都可能成为瓶颈。

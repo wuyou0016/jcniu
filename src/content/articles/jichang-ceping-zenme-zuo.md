@@ -9,7 +9,7 @@ difficulty: beginner
 publishedAt: 2026-10-24
 updatedAt: 2026-10-24
 rankBlock: none
-relatedTopics: [jichang-ceshu-gongju, wending-jichang-zenme-pan, xujia-xuanchuan-shibie, wanggaofeng-bian-man, jichang-zenme-xuan, haoyong-de-tizi]
+relatedTopics: [jichang-ceshu-gongju, wending-jichang-zenme-pan, xujia-xuanchuan-shibie, wanggaofeng-bian-man, jichang-zenme-xuan, haoyong-de-tizi, dingji-jichang-zenme-pingding]
 faqs:
   - q: 机场测评和机场评测是一回事吗？
     a: 基本是同一个意思，都是对一家机场的价格、线路、稳定性、条款等做评价。区别在于来源：有的是站长自己测的数据，有的是整理公开资料，有的只是转述。看测评时，先看它写明了数据是怎么来的。
